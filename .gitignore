@@ -27,3 +27,9 @@
 *.exe
 *.out
 *.app
+
+# Added by Bikram
+*~
+*.swp*
+build
+.project
