@@ -1,3 +1,6 @@
+#ifndef POSE_H
+#define POSE_H
+
 #include <iostream>
 
 namespace str{
@@ -64,3 +67,5 @@ std::ostream& operator<<(std::ostream& out, const str::Pose<T>& pose){
 	out << "( x = " << pose.x_ << ", y = " << pose.y_ << ", theta = " << pose.theta_ << ")" << std::endl;
 	return out;
 }
+
+#endif //POSE_H

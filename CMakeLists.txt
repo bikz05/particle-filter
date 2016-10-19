@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 2.8.9)
 project(particle_filter)
 
+# Set C++ 11
+add_definitions(-std=c++11)
+
 # Include the headers
 include_directories(include)
 
