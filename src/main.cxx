@@ -4,8 +4,9 @@
 #include "../include/pose.h"
 #include "../include/odometry_reading.h"
 #include "../include/laser_reading.h"
-#include "../include/map.h"
+#include "map.cpp"
 #include "../include/particle_filter.h"
+//#include "../data/bee-map.c"
 
 int main(int argc, char ** argv){
 	std::cout << "Particle Filter Assignment" << std::endl;
@@ -27,13 +28,22 @@ int main(int argc, char ** argv){
 	str::LaserReading<double> laserRdg(pose, range, 13);
 	std::cout << laserRdg << std::endl;
 
-	// Example --> Representing a map
-	std::vector<std::vector<double>> map_values(10, std::vector<double>(10));
-	// Randomly fill values
-	for(auto& it_row: map_values){
-		for(auto& it_col: it_row)
-			it_col = ((double) std::rand() / (RAND_MAX));
-	}
-	str::Map<double> map(map_values);
-	std::cout << map;
+	// Example --> Representing a map from vector
+	//	std::vector<std::vector<double>> map_values(10, std::vector<double>(10));
+	//	// Randomly fill values
+	//	for(auto& it_row: map_values){
+	//		for(auto& it_col: it_row)
+	//			it_col = ((double) std::rand() / (RAND_MAX));
+	//	}
+	//	str::Map<double> map(map_values);
+	//	std::cout << map;
+
+	// Example -- Show Vector
+	str::Map<double> map("../data/map/wean.dat");
+	// std::cout << map;
+	cv::Mat im = map.getImage();
+	cv::namedWindow("MAP", cv::WINDOW_NORMAL);
+	cv::imshow("MAP", im);
+	cv::waitKey(0);
+
 }
