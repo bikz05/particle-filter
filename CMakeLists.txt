@@ -27,8 +27,9 @@ file(GLOB SOURCES "src/*.cpp")
 # install(TARGETS particle_filter DESTINATION /usr/lib)
 
 # Make the executable
+
 add_executable(main src/main.cxx src/log_data_parser.cpp src/measurement_model.cpp)
-add_executable(parsing src/odom_parsing.cpp)
+add_executable(motion_model_test src/motion_model_test.cpp src/motion_model_odometry.cpp)
 
 # Link the libraries
 target_link_libraries(main ${OpenCV_LIBS})

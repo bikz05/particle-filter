@@ -42,19 +42,19 @@ class OdometryReading{
 		}
 
 		T getX() const{
-			return this->pose_.x_;
+			return this->pose_.getX();		// Sam changed
 		}
 
 		T getY() const{
-			return this->pose_.y_;
+			return this->pose_.getY();		// Sam changed
 		}
 
 		T getTheta() const{
-			return this->pose_.theta_;
+			return this->pose_.getTheta();	// Sam changed
 		}
 
 		T getTimestamp() const{
-			return this->pose_.timestamp_;
+			return this->timestamp_;		// Sam changed
 		}
 
 		template <typename U>
