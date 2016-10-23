@@ -6,6 +6,8 @@
 #include "../include/laser_reading.h"
 #include "map.cpp"
 #include "../include/particle_filter.h"
+#include "../include/log_data_parser.h"
+#include "../include/measurement_model.h"
 //#include "../data/bee-map.c"
 
 int main(int argc, char ** argv){
@@ -38,7 +40,14 @@ int main(int argc, char ** argv){
 	//	str::Map<double> map(map_values);
 	//	std::cout << map;
 
-	// Example -- Show Vector
+
+	// Example --> Parsing log data
+	str::LogDataParser data_parser("../data/log/robotdata1.log");
+	data_parser.parseDataPerLine();
+	data_parser.parseDataPerLine();
+	data_parser.closeFile();
+
+	// Example --> Show Vector
 	str::Map<double> map("../data/map/wean.dat");
 	// std::cout << map;
 	cv::Mat im = map.getImage();
