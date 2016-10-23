@@ -24,6 +24,7 @@ file(GLOB SOURCES "src/*.cpp")
 
 # Make the executable
 add_executable(main src/main.cxx)
+add_executable(parsing src/odom_parsing.cpp)
 
 # Link the libraries
 target_link_libraries(main ${OpenCV_LIBS})
