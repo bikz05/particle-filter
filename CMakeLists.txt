@@ -24,7 +24,7 @@ file(GLOB SOURCES "src/*.cpp")
 
 # Make the executable
 add_executable(main src/main.cxx)
-add_executable(parsing src/odom_parsing.cpp)
+add_executable(motion_model_test src/motion_model_test.cpp src/motion_model_odometry.cpp)
 
 # Link the libraries
 target_link_libraries(main ${OpenCV_LIBS})
