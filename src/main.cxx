@@ -46,7 +46,7 @@ int main(int argc, char ** argv){
 	// Example --> Parsing log data
 	str::LogDataParser data_parser("../data/log/robotdata1.log");
 
-	// test 5 lines
+	// test 10 lines
 	for (int i = 0; i < 10; ++i)
 	{
 		auto parsing_result = data_parser.parseDataPerLine();
@@ -64,15 +64,9 @@ int main(int argc, char ** argv){
 
 	data_parser.closeFile();
 
-
-	// std::cout << "parser output " << data_parser.parseDataPerLine() << std::endl;
-	// std::cout << "parser result:  \n"  << data_parser.laser_reading << std::endl;
-	// std::cout << "parser output " << data_parser.parseDataPerLine() << std::endl;
-	// std::cout << "parser result:  \n"  << data_parser.odom_reading << std::endl;
-
-	
-
 	std::cout << "Testing Parser Over" << std::endl;
+
+
 
 	// Test Particle Filter
 	str::ParticleFilter<double> particleFilter(5);
