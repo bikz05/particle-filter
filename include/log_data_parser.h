@@ -22,9 +22,6 @@ namespace str
 			void parseDataPerLine();
 		private:
 			std::ifstream data_file_;
-		
-		
-		
 	};
 
 }

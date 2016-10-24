@@ -28,7 +28,7 @@ file(GLOB SOURCES "src/*.cpp")
 
 # Make the executable
 
-add_executable(main src/main.cxx src/log_data_parser.cpp src/measurement_model.cpp)
+add_executable(main src/main.cxx src/log_data_parser.cpp src/measurement_model.cpp src/motion_model_odometry.cpp)
 add_executable(motion_model_test src/motion_model_test.cpp src/motion_model_odometry.cpp)
 
 # Link the libraries

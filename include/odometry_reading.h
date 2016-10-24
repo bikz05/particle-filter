@@ -19,6 +19,11 @@ class OdometryReading{
 		Pose<T> pose_;
 		T timestamp_;
 	public:
+		OdometryReading(){
+			this->pose_ = Pose<double>();
+			this->timestamp_ = 0;
+		}
+
 		OdometryReading(T x, T y, T theta, T timestamp):pose_(x, y, theta), timestamp_(timestamp){
 		}
 

@@ -18,8 +18,8 @@ template <typename T>
 class LaserReading{
 	private:
 		Pose<T> pose_;
-		T timestamp_;
 		std::vector<T> ranges_;
+		T timestamp_;
 	public:
 		LaserReading(T x, T y, T theta, std::vector<T> ranges, T timestamp):pose_(x, y, theta), ranges_(ranges), timestamp_(timestamp){
 		}

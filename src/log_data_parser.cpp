@@ -38,11 +38,11 @@ void str::LogDataParser::parseDataPerLine()
 
 	if( cur_line[0] == 'L')
 	{
-		//Parsing data to laser data strcture
+		//Parsing data to laser data structure
 	}
 	else if( cur_line[0] == 'O' )
 	{
-		//Parsing data to odometry data strcture
+		//Parsing data to odometry data structure
 	}
 	else
 	{
