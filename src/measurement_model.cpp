@@ -20,11 +20,26 @@ str::MeasurementModel::~MeasurementModel()
 /**
  * @brief TBD, should be main interface
 **/
-double str::MeasurementModel::getProbability()
+double str::MeasurementModel::getProbability(const str::LaserReading<double>& laser_reading, const str::Pose<double>& pose)
 {
-	//Step1. calculate predict measurement
-	//Step2. calculate probability
-	return 0;
+	//Step1. get pre-cashing table using pose, should return 180 values
+	//Step2. using table value and laser reading to compute prob using this->getProbFromBeamModel
+	//Step3. calculate overall probability, product of all 180 measurements
+
+	double overall_prob = 1;
+
+	// // comment it out first, ready to test 
+	// for (int i = 0; i < 180; ++i)
+	// {
+	// 	// get z_t_k* using pose and measurement idx
+	// 	double z_t_k_star = map_.getPrediction(pose, i)
+
+	// 	double prob = this->getProbFromBeamModel(laser_reading.getRanges()[i] ,z_t_k_star);
+
+	// 	overall_prob *= prob;
+	// }
+
+	return overall_prob;
 }
 
 

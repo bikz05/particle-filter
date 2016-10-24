@@ -1,6 +1,10 @@
 #ifndef MEASUREMENT_MODEL_H
 #define MEASUREMENT_MODEL_H
 
+#include "../include/pose.h"
+#include "../include/laser_reading.h"
+#include "../include/odometry_reading.h"
+
 namespace str
 {
 	class MeasurementModel;
@@ -24,7 +28,7 @@ namespace str
 
 			MeasurementModel();
 			virtual ~MeasurementModel();
-			double getProbability();
+			double getProbability(const str::LaserReading<double>& laser_reading, const str::Pose<double>& pose);
 			void setParameters(tuningParameters& input_param);
 			
 		private:
