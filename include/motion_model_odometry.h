@@ -25,7 +25,7 @@ public:
 
 	// typedef str::OdometryReading<T> OdomRdg;
 	typedef str::OdometryReading<double> OdomRdg;
-	typedef std::pair<OdomRdg,OdomRdg> pControl;
+	// typedef std::pair<OdomRdg,OdomRdg> pControl;
 
 	void setParam(const double& a1, const double& a2, const double& a3, const double& a4){
 		this->a1_ = a1;

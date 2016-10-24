@@ -5,6 +5,15 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include "../include/pose.h"
+#include "../include/laser_reading.h"
+#include "../include/odometry_reading.h"
+
+enum Output
+{
+	LASER = 0,
+	ODOM
+};
 
 namespace str
 {
@@ -19,9 +28,13 @@ namespace str
 			LogDataParser(std::string fileName);
 			virtual ~LogDataParser();
 			void closeFile();
-			void parseDataPerLine();
+			int parseDataPerLine();
 		private:
 			std::ifstream data_file_;
+		public:
+			OdometryReading<double> odom_reading;
+			LaserReading<double> laser_reading;
+			
 	};
 
 }
