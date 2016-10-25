@@ -1,12 +1,14 @@
 #include <cmath>
 #include "../include/measurement_model.h"
-
+#include "../include/global_nums.h"
+#include "map.cpp"
 /**
  * @brief Constructor
 **/
-str::MeasurementModel::MeasurementModel()
+str::MeasurementModel::MeasurementModel(str::Map<double>& map)
 {
-
+	map_ = map;
+	dist_table_ = new str::DistanceTable(map_);
 }
 
 /**
@@ -27,23 +29,132 @@ double str::MeasurementModel::getProbability(const str::LaserReading<double>& la
 	//Step3. calculate overall probability, product of all 180 measurements
 
 	double overall_prob = 1;
+	std::vector<double> predict_distance;
+	this->getDistTableByPose(pose, predict_distance);
+	std::vector<double> laser_data = laser_reading.getRanges();
+	
+	for (int i = 0; i < 180; ++i)
+	{
+		// get z_t_k* using pose and measurement idx
+		double z_t_k_star = predict_distance.at(i);
 
-	// auto sensor_pose = this->getSensorPose(pose);
+		double prob = this->getProbFromBeamModel( laser_data[i] ,z_t_k_star);
 
-	// std::cout << sensor_pose << std::endl;
-
-	// // comment it out first, ready to test 
-	// for (int i = 0; i < 180; ++i)
-	// {
-	// 	// get z_t_k* using pose and measurement idx
-	// 	double z_t_k_star = map_.getPrediction(sensor_pose, i)
-
-	// 	double prob = this->getProbFromBeamModel(laser_reading.getRanges()[i] ,z_t_k_star);
-
-	// 	overall_prob *= prob;
-	// }
+		overall_prob *= prob;
+	}
 
 	return overall_prob;
+}
+
+/**
+ * @brief Get predict distance from distance table based on laser pose
+**/
+void str::MeasurementModel::getDistTableByPose(const str::Pose<double>& pose, std::vector<double>& predict_distance)
+{	
+	//std::cout<<pose.getX()<<" "<<pose.getY()<<" "<<pose.getTheta()<<std::endl;
+	str::Pose<double> laser_pose = this->getSensorPose(pose);
+	//std::cout<<laser_pose.getX()<<" "<<laser_pose.getY()<<" "<<laser_pose.getTheta()<<std::endl;
+
+	str::Pose<unsigned int> laser_pose_grid;
+	this->poseCoordToGrid(laser_pose, laser_pose_grid);//this function transfer theta to degree
+
+
+	unsigned int x = laser_pose_grid.getX(); 
+	unsigned int y = laser_pose_grid.getY();
+	unsigned int theta = laser_pose_grid.getTheta();
+	std::vector<double> dist_table_per_grid(MEASUREMENT_PER_GRID);
+	
+	//std::cout<<x<<" "<<y<<" "<<theta<<std::endl;
+	dist_table_->calculateDistancePerGrid(x, y, dist_table_per_grid);
+
+	// for(auto ele:dist_table_per_grid)
+	// {
+	// 	std::cout<<ele<<" ";
+	// }
+
+
+	dist_table_per_grid = dist_table_->getDistPerGrid(x, y);
+	this->selectDistTableByTheta(theta, dist_table_per_grid);
+	// for(auto ele:dist_table_per_grid)
+	// {
+	// 	std::cout<<ele<<" ";
+	// }
+
+	predict_distance = dist_table_per_grid;
+}
+
+/**
+ * @brief select dist table (1~180) by theta
+**/
+void str::MeasurementModel::selectDistTableByTheta(const unsigned int& theta, std::vector<double>& dist_table_per_grid)
+{
+	//TODO
+	int robot_theta = theta;
+	unsigned int theta_start = (robot_theta - 90 + 1 + 360)%360;
+	unsigned int theta_end = (robot_theta + 90)%360;
+	
+	
+	if( theta_start < theta_end )
+	{
+		std::cout<<"case 1"<<std::endl;
+		unsigned int start_idx = theta_start;
+		unsigned int end_idx = theta_end;
+		if( (end_idx - start_idx + 1) != 180)
+			std::cout<<"wrong index in section 1"<<std::endl;
+		std::vector<double> selected_dist_table(dist_table_per_grid.begin()+start_idx, dist_table_per_grid.begin()+end_idx+1);
+		dist_table_per_grid = selected_dist_table;
+	}
+	else if( theta_start > theta_end )
+	{
+		std::cout<<"case 2"<<std::endl;
+		unsigned int start1_idx = theta_start;
+		unsigned int end1_idx = 359;
+		
+
+		unsigned int start2_idx = 0;
+		unsigned int end2_idx = theta_end;
+		
+		if( (end1_idx - start1_idx + end2_idx - start2_idx + 2)!=180 )
+			std::cout<<"wrong index in section 1"<<std::endl;
+
+		std::vector<double> temp_1(dist_table_per_grid.begin()+start1_idx, dist_table_per_grid.begin()+end1_idx+1);
+		std::vector<double> temp_2(dist_table_per_grid.begin()+start2_idx, dist_table_per_grid.begin()+end2_idx+1);
+
+		// for(auto ele:temp_1)
+		// {
+		// 	std::cout<<ele<<" ";
+		// }
+		// std::cout<<std::endl;
+
+		std::vector<double> selected_dist_table = temp_1;
+		selected_dist_table.insert(selected_dist_table.end(), temp_2.begin(), temp_2.end());
+
+		dist_table_per_grid = selected_dist_table;
+	
+	}
+	else
+	{
+		std::cout<<"something wrong.."<<std::endl;
+	}
+
+}
+
+/**
+ * @brief tranfer pose coord to grid, theta in degree
+**/
+void str::MeasurementModel::poseCoordToGrid(const str::Pose<double>& pose_coord, str::Pose<unsigned int>& pose_grid)
+{
+	str::Pose<double> copy_pose = pose_coord;
+	pose_grid.setX(static_cast<unsigned int>(round(copy_pose.getX()/MAP_RESOLUTION)));
+	pose_grid.setY(static_cast<unsigned int>(round(copy_pose.getY()/MAP_RESOLUTION)));
+	//std::cout<<"theta = "<<copy_pose.getTheta()<<std::endl;
+ 	
+	if( copy_pose.getTheta() < 0)
+		std::cout<<"currently it did not support negtive theta: "<<copy_pose.getTheta()<<std::endl;
+
+ 	copy_pose.setTheta((copy_pose.getTheta()/(M_PI))*180);
+ 	//std::cout<<"theta = "<<copy_pose.getTheta()<<std::endl;
+	pose_grid.setTheta(static_cast<unsigned int>(round(copy_pose.getTheta())));
 }
 
 
@@ -105,15 +216,72 @@ double str::MeasurementModel::prob_rand(const double& measurement)
 	return (measurement >= 0 && measurement < z_max_) ? 1/z_max_ : 0.0;
 }
 
-/**
- * @brief get sensor pose
-**/
-inline str::Pose<double> str::MeasurementModel::getSensorPose(const str::Pose<double>& pose)
+
+
+//unit test
+/*
+int main(int argc, char** argv)
 {
-	return str::Pose<double> (pose.getX()+sensor_dist_*std::cos(pose.getTheta()), pose.getY()+sensor_dist_*std::sin(pose.getTheta()), pose.getTheta(), 1);
+	//1.test select dist table by theta
+	// std::vector<double> dist_table_per_grid(360);
+	// std::iota(dist_table_per_grid.begin(), dist_table_per_grid.end(), 0);
+	
+	// str::MeasurementModel measurement;
+
+	// unsigned int theta = atoi(argv[1]);
+	// measurement.selectDistTableByTheta( theta, dist_table_per_grid);
+	// for(auto ele:dist_table_per_grid)
+	// {
+	// 	std::cout<<ele<<" ";
+	// }
+	// std::cout<<std::endl;
+
+	// std::cout<<"size = "<<dist_table_per_grid.size()<<std::endl;
+
+	//2, test coord to grid and get distance table
+	str::Map<double> map("../data/map/wean.dat");
+	// std::cout << map;
+	cv::Mat im = map.getImage();
+	cvtColor( im, im, cv::COLOR_GRAY2BGR );
+	str::MeasurementModel measurement(map);
+
+	double x = atof(argv[1]);
+	double y = atof(argv[2]);
+	double theta = atof(argv[3]);
+	
+	str::Pose<double> pose(x, y, theta);
+	std::vector<double> predict_dist;
+	measurement.getDistTableByPose(pose, predict_dist);
+
+	str::Pose<double> laser_pose = measurement.getSensorPose(pose);
+	str::Pose<unsigned int> laser_grid;
+	measurement.poseCoordToGrid(laser_pose, laser_grid);
+
+	std::cout<<laser_grid.getX()<<" "<<laser_grid.getY()<<" "<<laser_grid.getTheta()<<std::endl;
+
+	cv::Point2i laser_pos = cv::Point2i(laser_grid.getX(), laser_grid.getY());
+	//cv::circle(im, laser_pos, 2, cv::Scalar(0,0,255), -1, 8, 0);
+
+	for(auto ele:predict_dist)
+	{
+		std::cout<<ele<<" ";
+	}
+	std::cout<<std::endl;
+
+
+	for(auto coord:measurement.dist_table_->getCorrespondencePerGrid(laser_grid.getX(),laser_grid.getY()))
+	{
+		//std::cout<<coord.x0<<" "<<coord.y0<<" "<<coord.x1<<" "<<coord.y1<<std::endl;
+		cv::Point2i pt1 =  cv::Point2i(coord.x0, coord.y0);
+		cv::Point2i pt2 =  cv::Point2i(coord.x1, coord.y1);
+		cv::line(im, pt1, pt2, cv::Scalar(255,0,0), 1, 8, 0);
+	}
+	cv::circle(im, laser_pos, 2, cv::Scalar(0,0,255), -1, 8, 0);
+
+
+	cv::namedWindow("MAP", cv::WINDOW_NORMAL);
+	cv::imshow("MAP", im);
+	cv::waitKey(0);
+	return 0;
 }
-
-
-
-
-
+*/

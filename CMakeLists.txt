@@ -28,11 +28,18 @@ file(GLOB SOURCES "src/*.cpp")
 
 # Make the executable
 
-add_executable(main src/main.cxx src/log_data_parser.cpp src/measurement_model.cpp src/motion_model_odometry.cpp)
+add_executable(main src/main.cxx src/log_data_parser.cpp src/measurement_model.cpp src/motion_model_odometry.cpp src/distance_table.cpp)
 add_executable(motion_model_test src/motion_model_test.cpp src/motion_model_odometry.cpp)
-add_executable(distance_table src/distance_table.cpp)
 
 # Link the libraries
 target_link_libraries(main ${OpenCV_LIBS})
 # target_link_libraries(main particle_filter)
-target_link_libraries(distance_table ${OpenCV_LIBS})
+
+
+
+#Unit test
+#add_executable(distance_table src/distance_table.cpp)
+#target_link_libraries(distance_table ${OpenCV_LIBS})
+
+#add_executable(measurement src/measurement_model.cpp src/distance_table.cpp)
+#target_link_libraries(measurement ${OpenCV_LIBS})

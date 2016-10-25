@@ -68,7 +68,7 @@ std::vector<correspondence> str::DistanceTable::getCorrespondencePerGrid(const u
 void str::DistanceTable::calculateDistancePerGrid(const unsigned int& x, const unsigned int& y, std::vector<double>& dist_per_grid)
 {	
 	double map_value = c_map_.getLocation(x,y);
-	//std::cout<<"map_value = "<<map_value<<std::endl;
+	std::cout<<"map_value = "<<map_value<<std::endl;
 
 	if( map_value == -1.0 || map_value == 1.0)
 	{
@@ -135,7 +135,7 @@ double str::DistanceTable::calculateDistance(const unsigned int& x, const unsign
 }
 
 
-
+/*
 //Unit test
 int main(int argc, char** argv)
 {
@@ -148,7 +148,7 @@ int main(int argc, char** argv)
     //cv::flip(im, im, 0);
 
 	str::DistanceTable distance_table(map);
-	distTable dist_table;
+	//distTable dist_table;
 	//distance_table.buildDistanceTable(dist_table);
 
 	unsigned int x = atoi(argv[1]);
@@ -181,3 +181,4 @@ int main(int argc, char** argv)
 	cv::waitKey(0);
 	return 0;
 }
+*/

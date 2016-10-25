@@ -34,24 +34,19 @@ namespace str
 			void calculateDistancePerGrid(const unsigned int& x, const unsigned int& y, std::vector<double>& dist_per_grid);
 			std::vector<double> getDistPerGrid(const unsigned int& x, const unsigned int& y);
 			std::vector<correspondence> getCorrespondencePerGrid(const unsigned int& x, const unsigned int& y);
-			//for unit test
-			std::vector<double> dist_per_grid_;
-			std::vector<correspondence> correspondence_per_grid_;
-
-
-
 			
 			
 		private:
-			#define MEASUREMENT_PER_GRID		360//measure 360 per grid
 			str::Map<double> c_map_;
 			double ray_step_size_;//unit in grid
 			double theta_step_size_;//unit in rad
 			std::vector<std::vector<double>> map_;
 			std::unordered_map<unsigned int, std::vector<double>> dist_hashtable_;
 			std::unordered_map<unsigned int, std::vector<correspondence>> corr_hashtable_;
+			std::vector<double> dist_per_grid_;
+			std::vector<correspondence> correspondence_per_grid_;
+
 			inline unsigned int coordToGridID(const unsigned int& x, const unsigned int& y){return x + MAP_X_SIZE_IN_GRID*y;};
-			
 			double calculateDistance(const unsigned int& x, const unsigned int& y, const double& theta);
 			inline double getMapValue(const unsigned int& x, const unsigned int& y){return map_[y][x];}
 			

@@ -69,7 +69,7 @@ class LaserReading{
 			return this->pose_.timestamp_;
 		}
 
-		T getRanges() const{
+		std::vector<T> getRanges() const{
 			return this->ranges_;
 		}
 
