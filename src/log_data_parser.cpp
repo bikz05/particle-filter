@@ -1,6 +1,6 @@
 #include "../include/log_data_parser.h"
 #include <vector>
-
+#include <iterator>
 /**
  * @brief Constructor
 **/
@@ -53,7 +53,7 @@ int str::LogDataParser::parseDataPerLine()
 
 	    std::vector<double> vec_reading;
 
-	    for(int i = 7; i < tokens.size()-1 ; ++i){
+	    for(unsigned int i = 7; i < tokens.size()-1 ; ++i){
 	    	// std::cout << std::stod(tokens[i]) << std::endl;
 	    	vec_reading.push_back(std::stod(tokens[i]));
     	}

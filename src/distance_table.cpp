@@ -68,7 +68,7 @@ std::vector<correspondence> str::DistanceTable::getCorrespondencePerGrid(const u
 void str::DistanceTable::calculateDistancePerGrid(const unsigned int& x, const unsigned int& y, std::vector<double>& dist_per_grid)
 {	
 	double map_value = c_map_.getLocation(x,y);
-	std::cout<<"map_value = "<<map_value<<std::endl;
+	//std::cout<<"map_value = "<<map_value<<std::endl;
 
 	if( map_value == -1.0 || map_value == 1.0)
 	{
@@ -114,7 +114,7 @@ double str::DistanceTable::calculateDistance(const unsigned int& x, const unsign
 		//double map_value = this->getMapValue(static_cast<unsigned int>(cur_x), static_cast<unsigned int>(cur_y) );
 		double map_value = c_map_.getLocation(static_cast<unsigned int>(cur_x), static_cast<unsigned int>(cur_y) );
 		
-		std::cout<<map_value<<" ";
+		//std::cout<<map_value<<" ";
 		
 		if( map_value >= 0.98)
 			break;
@@ -122,11 +122,11 @@ double str::DistanceTable::calculateDistance(const unsigned int& x, const unsign
 		cur_y += step_size_y;
 		//std::cout<<cur_x<<" "<<cur_y<<" "<<std::endl;
 	}
-	std::cout<<std::endl;
+	//std::cout<<std::endl;
 	double dx = cur_x - static_cast<double>(x);
 	double dy = cur_y - static_cast<double>(y);
 	//std::cout<<dx<<" "<<dy<<" "<<std::endl;
-	std::cout<<cur_x<<" "<<cur_y<<" "<<std::endl;
+	//std::cout<<cur_x<<" "<<cur_y<<" "<<std::endl;
 	//for unit test
 	correspondence corrd(x, y, static_cast<unsigned int>(x + dx), static_cast<unsigned int>(y + dy));
 	correspondence_per_grid_.push_back(corrd);
@@ -160,17 +160,17 @@ int main(int argc, char** argv)
 	cv::Point2i robot_pos = cv::Point2i(x, y);
 
 
-
-	std::cout<<"distance per grid"<<std::endl;
-	for(auto dist:distance_table.getDistPerGrid(x,y))
-	{
-		std::cout<<dist<<" ";
-	}
-	std::cout<<std::endl;
+	//DEBUG
+	// std::cout<<"distance per grid"<<std::endl;
+	// for(auto dist:distance_table.getDistPerGrid(x,y))
+	// {
+	// 	std::cout<<dist<<" ";
+	// }
+	// std::cout<<std::endl;
 
 	for(auto coord:distance_table.getCorrespondencePerGrid(x,y))
 	{
-		std::cout<<coord.x0<<" "<<coord.y0<<" "<<coord.x1<<" "<<coord.y1<<std::endl;
+		//std::cout<<coord.x0<<" "<<coord.y0<<" "<<coord.x1<<" "<<coord.y1<<std::endl;
 		cv::Point2i pt1 =  cv::Point2i(coord.x0, coord.y0);
 		cv::Point2i pt2 =  cv::Point2i(coord.x1, coord.y1);
 		cv::line(im, pt1, pt2, cv::Scalar(255,0,0), 1, 8, 0);
