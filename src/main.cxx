@@ -68,6 +68,7 @@ int main(int argc, char ** argv){
 
 
 
+
 	// Test Particle Filter
 	str::ParticleFilter<double> particleFilter(5);
 	// Some random poses
@@ -91,7 +92,15 @@ int main(int argc, char ** argv){
 	str::Map<double> map("../data/map/wean.dat");
 	// std::cout << map;
 	cv::Mat im = map.getImage();
-	cv::namedWindow("MAP", cv::WINDOW_NORMAL);
-	cv::imshow("MAP", im);
-	cv::waitKey(0);
+
+
+
+	// Example --> Measurement Model
+	str::MeasurementModel measurement_model(map);
+	measurement_model.UnitTest();
+
+
+	// cv::namedWindow("MAP", cv::WINDOW_NORMAL);
+	// cv::imshow("MAP", im);
+	// cv::waitKey(0);
 }
