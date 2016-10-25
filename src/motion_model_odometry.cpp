@@ -1,6 +1,6 @@
 #include "motion_model_odometry.h"
 
-// namespace str{
+namespace str{
 
 // template <typename T>
 Motion_Model_Odom::Motion_Model_Odom() : 
@@ -73,4 +73,4 @@ double Motion_Model_Odom::SampleNormal(const double& b_square)
 	return 0.5*sum;
 }
 
-// }
+}

@@ -1,6 +1,10 @@
 #ifndef MEASUREMENT_MODEL_H
 #define MEASUREMENT_MODEL_H
 
+#include "../include/pose.h"
+#include "../include/laser_reading.h"
+#include "../include/odometry_reading.h"
+
 namespace str
 {
 	class MeasurementModel;
@@ -24,7 +28,7 @@ namespace str
 
 			MeasurementModel();
 			virtual ~MeasurementModel();
-			double getProbability();
+			double getProbability(const str::LaserReading<double>& laser_reading, const str::Pose<double>& pose);
 			void setParameters(tuningParameters& input_param);
 			
 		private:
@@ -33,9 +37,12 @@ namespace str
 			double prob_short(const double& measurement, const double& predict_measurement);
 			double prob_max(const double& measurement);
 			double prob_rand(const double& measurement);
+			inline str::Pose<double> getSensorPose(const str::Pose<double>& pose);
 
 			tuningParameters params_;
 			double z_max_;//need to discuss how to get this one.
+
+			const double sensor_dist_ = 25.0;
 
 		
 		

@@ -2,6 +2,8 @@
 #define ODOMETRY_READING_H
 
 #include <iostream>
+#include "../include/pose.h"
+
 
 namespace str{
 	template <typename T>
@@ -19,6 +21,11 @@ class OdometryReading{
 		Pose<T> pose_;
 		T timestamp_;
 	public:
+		OdometryReading(){
+			this->pose_ = Pose<double>();
+			this->timestamp_ = 0;
+		}
+
 		OdometryReading(T x, T y, T theta, T timestamp):pose_(x, y, theta), timestamp_(timestamp){
 		}
 
@@ -26,19 +33,19 @@ class OdometryReading{
 		}
 
 		void setX(T x){
-			this->pose_.x_ = x;
+			this->pose_.setX(x); 			// Sam changed
 		}
 
 		void setY(T y){
-			this->pose_.y_ = y;
+			this->pose_.setY(y); 			// Sam changed
 		}
 
 		void setTheta(T theta){
-			this->pose_.theta_ = theta;
+			this->pose_.setTheta(theta); 	// Sam changed
 		}
 
 		void setTimestamp(T timestamp){
-			this->pose_.timestamp_ = timestamp;
+			this->timestamp_ = timestamp;	// Sam changed
 		}
 
 		T getX() const{
