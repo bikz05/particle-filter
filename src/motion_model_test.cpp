@@ -79,7 +79,7 @@ int main(int argc, char** argv)
 	std::vector<std::string> tokens{std::istream_iterator<std::string>{iss},
                       			std::istream_iterator<std::string>{}};
 
-    for(int i = 1; i < tokens.size(); ++i){
+    for(unsigned int i = 1; i < tokens.size(); ++i){
     	std::cout << std::stod(tokens[i]) << std::endl;
     }
 
