@@ -97,8 +97,11 @@ int main(int argc, char ** argv){
 
 	// Example --> Measurement Model
 	str::MeasurementModel measurement_model(map);
-	measurement_model.UnitTest();
-
+	//measurement_model.UnitTest();
+	str::Pose<double> pose(3800,4000,M_PI/2);
+	std::cout<<"laser reading"<<data_parser.laser_reading << std::endl;
+	double prob = measurement_model.getProbability(data_parser.laser_reading, pose);
+	std::cout<<"prob = "<<prob<<std::endl;
 
 	// cv::namedWindow("MAP", cv::WINDOW_NORMAL);
 	// cv::imshow("MAP", im);

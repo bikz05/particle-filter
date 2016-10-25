@@ -24,7 +24,7 @@ namespace str
 				double w_short = 1.0;
 				double w_max = 1.0;
 				double w_rand = 1.0;
-				double sigma_hit = 1.0;
+				double sigma_hit = 30.0;
 				double lambda_short = 1.0;
 			};
 			MeasurementModel(){};
@@ -39,7 +39,7 @@ namespace str
 			
 			
 			void getDistTableByPose(const str::Pose<double>& pose, std::vector<double>& predict_dist);
-			void selectDistTableByTheta(const unsigned int& theta_in_grid, std::vector<double>& dist_table_per_grid);
+			void selectDistTableByTheta(const unsigned int& theta_in_grid, std::vector<double>& dist_table_per_grid, std::vector<correspondence>& corr_per_grid);
 			void poseCoordToGrid(const str::Pose<double>& pose_coord, str::Pose<unsigned int>& pose_grid);
 			double getProbFromBeamModel(const double& measurement, const double& predict_measurement);
 			double prob_hit(const double& measurement, const double& predict_measurement);
@@ -51,6 +51,8 @@ namespace str
 			
 
 			str::DistanceTable* dist_table_;
+			std::vector<double> selected_dist_table_;
+			std::vector<correspondence> selected_corr_table_;
 			tuningParameters params_;
 			double z_max_ = MAX_MEARSUREMENT_DIST;//need to discuss how to get this one.
 
