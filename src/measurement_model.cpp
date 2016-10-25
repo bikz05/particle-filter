@@ -39,7 +39,6 @@ double str::MeasurementModel::getProbability(const str::LaserReading<double>& la
 		double z_t_k_star = predict_distance.at(i);
 
 		double prob = this->getProbFromBeamModel( laser_data[i] ,z_t_k_star);
-
 		overall_prob *= prob;
 	}
 
@@ -72,41 +71,47 @@ void str::MeasurementModel::getDistTableByPose(const str::Pose<double>& pose, st
 	// 	std::cout<<ele<<" ";
 	// }
 
-
 	dist_table_per_grid = dist_table_->getDistPerGrid(x, y);
-	this->selectDistTableByTheta(theta, dist_table_per_grid);
+	std::vector<correspondence> corr_per_grid =  dist_table_->getCorrespondencePerGrid(x,y);
+	this->selectDistTableByTheta(theta, dist_table_per_grid, corr_per_grid);
 	// for(auto ele:dist_table_per_grid)
 	// {
 	// 	std::cout<<ele<<" ";
 	// }
 
 	predict_distance = dist_table_per_grid;
+	selected_dist_table_ = dist_table_per_grid;
+	selected_corr_table_ = corr_per_grid;
 }
 
 /**
  * @brief select dist table (1~180) by theta
 **/
-void str::MeasurementModel::selectDistTableByTheta(const unsigned int& theta, std::vector<double>& dist_table_per_grid)
+void str::MeasurementModel::selectDistTableByTheta(const unsigned int& theta_in_grid, std::vector<double>& dist_table_per_grid, std::vector<correspondence>& corr_per_grid)
 {
 	//TODO
-	int robot_theta = theta;
+	int robot_theta = theta_in_grid;
 	unsigned int theta_start = (robot_theta - 90 + 1 + 360)%360;
 	unsigned int theta_end = (robot_theta + 90)%360;
 	
 	
 	if( theta_start < theta_end )
 	{
-		std::cout<<"case 1"<<std::endl;
+		//std::cout<<"case 1"<<std::endl;
 		unsigned int start_idx = theta_start;
 		unsigned int end_idx = theta_end;
 		if( (end_idx - start_idx + 1) != 180)
 			std::cout<<"wrong index in section 1"<<std::endl;
+		
 		std::vector<double> selected_dist_table(dist_table_per_grid.begin()+start_idx, dist_table_per_grid.begin()+end_idx+1);
+		std::vector<correspondence> selected_corr(corr_per_grid.begin()+start_idx, corr_per_grid.begin()+end_idx+1);
+
 		dist_table_per_grid = selected_dist_table;
+		corr_per_grid = selected_corr;
 	}
 	else if( theta_start > theta_end )
 	{
-		std::cout<<"case 2"<<std::endl;
+		//std::cout<<"case 2"<<std::endl;
 		unsigned int start1_idx = theta_start;
 		unsigned int end1_idx = 359;
 		
@@ -115,22 +120,27 @@ void str::MeasurementModel::selectDistTableByTheta(const unsigned int& theta, st
 		unsigned int end2_idx = theta_end;
 		
 		if( (end1_idx - start1_idx + end2_idx - start2_idx + 2)!=180 )
-			std::cout<<"wrong index in section 1"<<std::endl;
+			std::cout<<"wrong index in section 2"<<std::endl;
 
-		std::vector<double> temp_1(dist_table_per_grid.begin()+start1_idx, dist_table_per_grid.begin()+end1_idx+1);
-		std::vector<double> temp_2(dist_table_per_grid.begin()+start2_idx, dist_table_per_grid.begin()+end2_idx+1);
+		std::vector<double> dist_temp_1(dist_table_per_grid.begin()+start1_idx, dist_table_per_grid.begin()+end1_idx+1);
+		std::vector<double> dist_temp_2(dist_table_per_grid.begin()+start2_idx, dist_table_per_grid.begin()+end2_idx+1);
 
-		// for(auto ele:temp_1)
+		std::vector<correspondence> corr_temp_1(corr_per_grid.begin()+start1_idx, corr_per_grid.begin()+end1_idx+1);
+		std::vector<correspondence> corr_temp_2(corr_per_grid.begin()+start2_idx, corr_per_grid.begin()+end2_idx+1);
+		// for(auto ele:dist_temp_1)
 		// {
 		// 	std::cout<<ele<<" ";
 		// }
 		// std::cout<<std::endl;
 
-		std::vector<double> selected_dist_table = temp_1;
-		selected_dist_table.insert(selected_dist_table.end(), temp_2.begin(), temp_2.end());
+		std::vector<double> selected_dist_table = dist_temp_1;
+		selected_dist_table.insert(selected_dist_table.end(), dist_temp_2.begin(), dist_temp_2.end());
+
+		std::vector<correspondence> selected_corr = corr_temp_1;
+		selected_corr.insert(selected_corr.end(), corr_temp_2.begin(), corr_temp_2.end());
 
 		dist_table_per_grid = selected_dist_table;
-	
+		corr_per_grid = selected_corr;
 	}
 	else
 	{
@@ -148,13 +158,16 @@ void str::MeasurementModel::poseCoordToGrid(const str::Pose<double>& pose_coord,
 	pose_grid.setX(static_cast<unsigned int>(round(copy_pose.getX()/MAP_RESOLUTION)));
 	pose_grid.setY(static_cast<unsigned int>(round(copy_pose.getY()/MAP_RESOLUTION)));
 	//std::cout<<"theta = "<<copy_pose.getTheta()<<std::endl;
- 	
-	if( copy_pose.getTheta() < 0)
-		std::cout<<"currently it did not support negtive theta: "<<copy_pose.getTheta()<<std::endl;
+	// if( copy_pose.getTheta() < 0)
+	// 	std::cout<<"currently it did not support negtive theta: "<<copy_pose.getTheta()<<std::endl;
 
- 	copy_pose.setTheta((copy_pose.getTheta()/(M_PI))*180);
- 	//std::cout<<"theta = "<<copy_pose.getTheta()<<std::endl;
-	pose_grid.setTheta(static_cast<unsigned int>(round(copy_pose.getTheta())));
+	double theta = copy_pose.getTheta();
+	if(theta > M_PI || theta < -M_PI)
+		std::cout<<"Error: theta out of range [M_PI, -M_PI], theta: "<<theta<<std::endl;
+	if(theta < 0)
+		theta += 2*M_PI;
+
+	pose_grid.setTheta(static_cast<unsigned int>(round((theta/(M_PI))*180)));
 }
 
 
@@ -167,6 +180,9 @@ double str::MeasurementModel::getProbFromBeamModel(const double& measurement, co
 	double w_p_short = params_.w_short * this->prob_short(measurement, predict_measurement);
 	double w_p_max = params_.w_max * this->prob_max(measurement);
 	double w_p_rand = params_.w_rand * this->prob_rand(measurement);
+
+	//std::cout<<"prob: "<<w_p_hit + w_p_short + w_p_max + w_p_rand<<" measure: "<<measurement<<" predict: "<<predict_measurement<<" w_p_hit: "<<w_p_hit<<" w_p_short: "<<w_p_short<<" w_p_max: "<<w_p_max<<" w_p_rand: "<<w_p_rand<<std::endl;
+
 	return w_p_hit + w_p_short + w_p_max + w_p_rand;
 }
 
@@ -216,51 +232,55 @@ double str::MeasurementModel::prob_rand(const double& measurement)
 	return (measurement >= 0 && measurement < z_max_) ? 1/z_max_ : 0.0;
 }
 
-
-
-//unit test
-/*
-int main(int argc, char** argv)
+/**
+ * @brief UnitTest
+**/
+void str::MeasurementModel::UnitTest()
 {
 	//1.test select dist table by theta
-	// std::vector<double> dist_table_per_grid(360);
-	// std::iota(dist_table_per_grid.begin(), dist_table_per_grid.end(), 0);
+	std::cout<<"Test get artificial data by theta(degree)"<<std::endl;
+	std::vector<double> dist_table_per_grid(MEASUREMENT_PER_GRID);
+	std::vector<correspondence> coor_per_grid( MEASUREMENT_PER_GRID, correspondence(0,0,0,0));
+	std::iota(dist_table_per_grid.begin(), dist_table_per_grid.end(), 0);
 	
-	// str::MeasurementModel measurement;
 
-	// unsigned int theta = atoi(argv[1]);
-	// measurement.selectDistTableByTheta( theta, dist_table_per_grid);
-	// for(auto ele:dist_table_per_grid)
-	// {
-	// 	std::cout<<ele<<" ";
-	// }
-	// std::cout<<std::endl;
+	unsigned int theta_in_grid = 180;
+	this->selectDistTableByTheta( theta_in_grid, dist_table_per_grid, coor_per_grid);
+	for(auto ele:dist_table_per_grid)
+	{
+		std::cout<<ele<<" ";
+	}
+	std::cout<<std::endl;
 
-	// std::cout<<"size = "<<dist_table_per_grid.size()<<std::endl;
+	std::cout<<"size = "<<dist_table_per_grid.size()<<std::endl;
+
+
+
+
 
 	//2, test coord to grid and get distance table
+	std::cout<<"Test get distTable by pose"<<std::endl;
 	str::Map<double> map("../data/map/wean.dat");
-	// std::cout << map;
 	cv::Mat im = map.getImage();
+	dist_table_ = new str::DistanceTable(map);
 	cvtColor( im, im, cv::COLOR_GRAY2BGR );
 	str::MeasurementModel measurement(map);
-
-	double x = atof(argv[1]);
-	double y = atof(argv[2]);
-	double theta = atof(argv[3]);
+	//test num
+	double x = 3950;
+	double y = 4000;
+	double theta = -M_PI;
 	
 	str::Pose<double> pose(x, y, theta);
 	std::vector<double> predict_dist;
-	measurement.getDistTableByPose(pose, predict_dist);
+	this->getDistTableByPose(pose, predict_dist);
 
-	str::Pose<double> laser_pose = measurement.getSensorPose(pose);
+	str::Pose<double> laser_pose = this->getSensorPose(pose);
 	str::Pose<unsigned int> laser_grid;
-	measurement.poseCoordToGrid(laser_pose, laser_grid);
-
-	std::cout<<laser_grid.getX()<<" "<<laser_grid.getY()<<" "<<laser_grid.getTheta()<<std::endl;
+	this->poseCoordToGrid(laser_pose, laser_grid);
+	std::cout<<"laser coord = "<<laser_pose.getX()<<" "<<laser_pose.getY()<<" "<<laser_pose.getTheta()<<std::endl;
+	std::cout<<"laser grid = "<<laser_grid.getX()<<" "<<laser_grid.getY()<<" "<<laser_grid.getTheta()<<std::endl;
 
 	cv::Point2i laser_pos = cv::Point2i(laser_grid.getX(), laser_grid.getY());
-	//cv::circle(im, laser_pos, 2, cv::Scalar(0,0,255), -1, 8, 0);
 
 	for(auto ele:predict_dist)
 	{
@@ -269,7 +289,7 @@ int main(int argc, char** argv)
 	std::cout<<std::endl;
 
 
-	for(auto coord:measurement.dist_table_->getCorrespondencePerGrid(laser_grid.getX(),laser_grid.getY()))
+	for(auto coord:this->selected_corr_table_)
 	{
 		//std::cout<<coord.x0<<" "<<coord.y0<<" "<<coord.x1<<" "<<coord.y1<<std::endl;
 		cv::Point2i pt1 =  cv::Point2i(coord.x0, coord.y0);
@@ -282,6 +302,4 @@ int main(int argc, char** argv)
 	cv::namedWindow("MAP", cv::WINDOW_NORMAL);
 	cv::imshow("MAP", im);
 	cv::waitKey(0);
-	return 0;
 }
-*/

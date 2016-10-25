@@ -9,5 +9,6 @@
 
 /*MEASUREMENT*/
 #define MEASUREMENT_PER_GRID		 360//measure 360 per grid
+#define MAX_MEARSUREMENT_DIST		8000//??????cm
 #define ROBOT_MEASUREMENT_NUM		 180//measure from 1 ~ 180 based on robot heading
 #endif //GLOBAL_NUMS_H
