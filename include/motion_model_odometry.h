@@ -33,7 +33,7 @@ namespace str{
 		};
 
 		// str::Pose<T> Sample(const std::pair<OdomRdg,OdomRdg>& control_u, const str::Pose<T>& prev_pose);
-		str::Pose<double> Sample(const std::pair<OdomRdg,OdomRdg>& control_u, const str::Pose<double>& prev_pose);
+		bool Sample(const std::pair<OdomRdg,OdomRdg>& control_u, str::Pose<double>& prev_pose);
 
 	private:
 

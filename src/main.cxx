@@ -124,18 +124,6 @@ int main(int argc, char ** argv){
 	// // Odometry Reading
 	// auto new_samples = particleFilter.mcl(xtm1, odoReadingPair, laserRdg);
 
-	// // Test Particle Filter
-	// str::ParticleFilter<double> particleFilter(5);
-	// // Some random poses
-	// std::vector<str::Pose<double>> xtm1;
-	// xtm1.push_back(str::Pose<double>(2, 3, 2, 2));
-	// xtm1.push_back(str::Pose<double>(2, 3, 2, 2));
-	// xtm1.push_back(str::Pose<double>(7, 3, 2, 2));
-	// xtm1.push_back(str::Pose<double>(7, 3, 2, 2));
-	// xtm1.push_back(str::Pose<double>(2, 3, 2, 2));
-	// std::pair<str::OdometryReading<double>, str::OdometryReading<double>> odoReadingPair = std::make_pair(odoRdg_1, odoRdg_2);
-	//	odoReadingPair.first = odoRdg;
-	//	odoReadingPair.second = odoRdg;
 
 	// for(auto sample: new_samples)
 	// 	std::cout << sample;
@@ -159,13 +147,13 @@ int main(int argc, char ** argv){
 
 
 
-	// Example --> Measurement Model
-	str::MeasurementModel measurement_model(map);
-	//measurement_model.UnitTest();
-	str::Pose<double> pose(3800,4000,M_PI/2);
-	std::cout<<"laser reading"<<data_parser.laser_reading << std::endl;
-	double prob = measurement_model.getProbability(data_parser.laser_reading, pose);
-	std::cout<<"prob = "<<prob<<std::endl;
+	// // Example --> Measurement Model
+	// str::MeasurementModel measurement_model(map);
+	// //measurement_model.UnitTest();
+	// str::Pose<double> pose(3800,4000,M_PI/2);
+	// std::cout<<"laser reading"<<data_parser.laser_reading << std::endl;
+	// double prob = measurement_model.getProbability(data_parser.laser_reading, pose);
+	// std::cout<<"prob = "<<prob<<std::endl;
 
 	// cv::namedWindow("MAP", cv::WINDOW_NORMAL);
 	// cv::imshow("MAP", im);
