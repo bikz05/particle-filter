@@ -61,18 +61,23 @@ std::vector<double> str::DistanceTable::getDistPerGrid(const unsigned int& x, co
 std::vector<correspondence> str::DistanceTable::getCorrespondencePerGrid(const unsigned int& x, const unsigned int& y)
 {
 	unsigned int id = this->coordToGridID(x,y);
+	//std::cout<<"ccc = "<<corr_hashtable_[id].size();
 	return corr_hashtable_[id];
 }
 
 
 void str::DistanceTable::calculateDistancePerGrid(const unsigned int& x, const unsigned int& y, std::vector<double>& dist_per_grid)
 {	
+	correspondence_per_grid_.clear();
+
 	double map_value = c_map_.getLocation(x,y);
 	std::cout<<"map_value = "<<map_value<<std::endl;
 
 	if( map_value == -1.0 || map_value == 1.0)
 	{
 		std::fill(dist_per_grid.begin(), dist_per_grid.begin()+MEASUREMENT_PER_GRID, 0.0);
+		std::vector<correspondence> temp(MEASUREMENT_PER_GRID,correspondence(x,y,x,y));
+		correspondence_per_grid_ = temp;
 	}
 	else
 	{
@@ -129,56 +134,8 @@ double str::DistanceTable::calculateDistance(const unsigned int& x, const unsign
 	//std::cout<<cur_x<<" "<<cur_y<<" "<<std::endl;
 	//for unit test
 	correspondence corrd(x, y, static_cast<unsigned int>(x + dx), static_cast<unsigned int>(y + dy));
+	
 	correspondence_per_grid_.push_back(corrd);
 
 	return sqrt(dx*dx + dy*dy);
 }
-
-
-/*
-//Unit test
-int main(int argc, char** argv)
-{
-	str::Map<double> map("../data/map/wean.dat");
-	// std::cout << map;
-	cv::Mat im = map.getImage();
-	cvtColor( im, im, cv::COLOR_GRAY2BGR );
-	
-	//cv::transpose(im, im);
-    //cv::flip(im, im, 0);
-
-	str::DistanceTable distance_table(map);
-	//distTable dist_table;
-	//distance_table.buildDistanceTable(dist_table);
-
-	unsigned int x = atoi(argv[1]);
-	unsigned int y = atoi(argv[2]);
-
-	std::vector<double> dist_per_grid(MEASUREMENT_PER_GRID);
-	distance_table.calculateDistancePerGrid(x, y, dist_per_grid);
-	
-	cv::Point2i robot_pos = cv::Point2i(x, y);
-
-
-	//DEBUG
-	// std::cout<<"distance per grid"<<std::endl;
-	// for(auto dist:distance_table.getDistPerGrid(x,y))
-	// {
-	// 	std::cout<<dist<<" ";
-	// }
-	// std::cout<<std::endl;
-
-	for(auto coord:distance_table.getCorrespondencePerGrid(x,y))
-	{
-		//std::cout<<coord.x0<<" "<<coord.y0<<" "<<coord.x1<<" "<<coord.y1<<std::endl;
-		cv::Point2i pt1 =  cv::Point2i(coord.x0, coord.y0);
-		cv::Point2i pt2 =  cv::Point2i(coord.x1, coord.y1);
-		cv::line(im, pt1, pt2, cv::Scalar(255,0,0), 1, 8, 0);
-	}
-	cv::circle(im, robot_pos, 2, cv::Scalar(0,0,255), 3, 8, 0);
-	cv::namedWindow("MAP", cv::WINDOW_NORMAL);
-	cv::imshow("MAP", im);
-	cv::waitKey(0);
-	return 0;
-}
-*/
