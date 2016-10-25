@@ -28,11 +28,15 @@ double str::MeasurementModel::getProbability(const str::LaserReading<double>& la
 
 	double overall_prob = 1;
 
+	// auto sensor_pose = this->getSensorPose(pose);
+
+	// std::cout << sensor_pose << std::endl;
+
 	// // comment it out first, ready to test 
 	// for (int i = 0; i < 180; ++i)
 	// {
 	// 	// get z_t_k* using pose and measurement idx
-	// 	double z_t_k_star = map_.getPrediction(pose, i)
+	// 	double z_t_k_star = map_.getPrediction(sensor_pose, i)
 
 	// 	double prob = this->getProbFromBeamModel(laser_reading.getRanges()[i] ,z_t_k_star);
 
@@ -100,3 +104,16 @@ double str::MeasurementModel::prob_rand(const double& measurement)
 {
 	return (measurement >= 0 && measurement < z_max_) ? 1/z_max_ : 0.0;
 }
+
+/**
+ * @brief get sensor pose
+**/
+inline str::Pose<double> str::MeasurementModel::getSensorPose(const str::Pose<double>& pose)
+{
+	return str::Pose<double> (pose.getX()+sensor_dist_*std::cos(pose.getTheta()), pose.getY()+sensor_dist_*std::sin(pose.getTheta()), pose.getTheta(), 1);
+}
+
+
+
+
+

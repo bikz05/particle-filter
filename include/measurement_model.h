@@ -37,9 +37,12 @@ namespace str
 			double prob_short(const double& measurement, const double& predict_measurement);
 			double prob_max(const double& measurement);
 			double prob_rand(const double& measurement);
+			inline str::Pose<double> getSensorPose(const str::Pose<double>& pose);
 
 			tuningParameters params_;
 			double z_max_;//need to discuss how to get this one.
+
+			const double sensor_dist_ = 25.0;
 
 		
 		
