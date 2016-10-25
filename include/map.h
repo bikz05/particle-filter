@@ -27,20 +27,23 @@ class Map{
 		int global_mapsize_x_, global_mapsize_y_, resolution_;
 		int autoshifted_x_, autoshifted_y_;
 		std::pair<int, int> global_map_;
+		bool is_load_map;
 	public:
-		Map(std::vector<std::vector<T>> map):map_(map){
+		Map(std::vector<std::vector<T>> map):map_(map),is_load_map(false){
 		}
 
-		Map(std::string fileName){
+		Map(std::string fileName):is_load_map(false){
 			loadMap(fileName);
 		}
+
+		Map(){}
 
 		void setLocation(int x, int y, T value){
 			this->map_[y][x] = value;
 		}
 
 		T getLocation(int x, int y) const{
-			return this->map_[y][x];
+			return 1 - this->map_[y][x];
 		}
 
 		int loadMap(std::string fileName);
@@ -48,6 +51,8 @@ class Map{
 		cv::Mat_<T> vec2Mat();
 
 		cv::Mat getImage();
+
+		std::vector<std::vector<T>> getMap();
 
 		template <typename U>
 		friend std::ostream& ::operator<<(std::ostream& out, const str::Map<U>& map);

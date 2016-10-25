@@ -7,9 +7,18 @@ cv::Mat_<T> str::Map<T>::vec2Mat(){
 	cv::Mat_<T> image(rows, cols);
 	for (int i = 0; i < rows; i++)
 	{
+		//image.row(i) = cv::Mat(map_[i]).t();
 		image.row(i) = cv::Mat(map_[i]).t();
 	}
 	return image;
+}
+
+template <typename T>
+std::vector<std::vector<T>> str::Map<T>::getMap()
+{
+	if(!is_load_map)
+		std::cerr << "[ERROR] Map is not loaded " << std::endl;
+	return map_;
 }
 
 template <typename T>
@@ -77,5 +86,7 @@ int str::Map<T>::loadMap(std::string fileName){
 		}
 		line_no++;
 	}
+
+	is_load_map = true;
 	return 0;
 }
