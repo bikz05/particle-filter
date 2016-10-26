@@ -27,11 +27,11 @@ class ParticleFilter{
 		Motion_Model_Odom motionModel_;
 		MeasurementModel measurementModel_;
 		std::random_device rd_;
-		int w_slow = 0;
-		int w_fast = 0;
+		double w_slow = 0;
+		double w_fast = 0;
 		// TODO Update these
-		int a_slow = .2;
-		int a_fast = .5;
+		double a_slow = .2;
+		double a_fast = .5;
 		void importanceSampling();
 		void lowVarianceSampling();
 		void augmentedSampling();
