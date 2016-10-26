@@ -37,7 +37,7 @@ class ParticleFilter{
 		void augmentedSampling();
 
 	public:
-		ParticleFilter(int no_samples);
+		ParticleFilter(int no_samples, std::vector<str::Pose<T>>& x_prior);
 		std::vector<str::Pose<T>>& mcl(std::vector<str::Pose<T>>& x_tm1,
 			const std::pair<str::OdometryReading<T>, str::OdometryReading<T>>& odoReadingPair,
 			const str::LaserReading<T>& z_t);

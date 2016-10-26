@@ -10,7 +10,7 @@
 #include "../include/measurement_model.h"
 //#include "../data/bee-map.c"
 
-std::vector<str::Pose<double>> getUniformParticles(str::Map<double> map, const int& num_particles, cv::Mat image)
+std::vector<str::Pose<double>> getUniformParticles(str::Map<double> map, const int& num_particles, cv::Mat &image)
 {
 	const double k_map_val_threshold = 0.1;
 
@@ -35,6 +35,8 @@ std::vector<str::Pose<double>> getUniformParticles(str::Map<double> map, const i
 			out_vec_pose.push_back(str::Pose<double>(x,y,theta,1));
 
 			cv::Point2i point = cv::Point2i(x_grid,y_grid);
+
+			// std::cout << "wu la la " << std::endl;
 
 			cv::circle(image, point, 1, cv::Scalar(255,0,0), -1, 8, 0);
 
@@ -63,19 +65,20 @@ int main(int argc, char ** argv)
 	// std::cout << map;
 
 	cv::Mat im = map.getImage();
-	cv::Mat im_display = im.clone();
 	cvtColor( im, im, cv::COLOR_GRAY2BGR );
+	cv::Mat im_display = im.clone();
 	cv::namedWindow("MAP", cv::WINDOW_NORMAL);
 	str::LogDataParser data_parser("../data/log/robotdata1.log");
 
-	auto uniform_particles = getUniformParticles(map, num_of_sample, im);
+	auto uniform_particles = getUniformParticles(map, num_of_sample, im_display);
+	cv::imshow("MAP", im_display);
+	cv::waitKey(1000);
 	auto new_samples = uniform_particles;
-	bool odometry_execute_flag = false;
+	bool odometry_execute_flag = true;
 	bool odometry_first_reading = false;
-	str::ParticleFilter<double> particleFilter(num_of_sample);
-	cv::namedWindow("MAP", cv::WINDOW_NORMAL);
+	str::ParticleFilter<double> particleFilter(num_of_sample, uniform_particles);
 
-	for (int i = 0; i < 100; ++i)
+	for (int i = 0; i < 1; ++i)
 	{
 		im_display = im.clone();
 		auto parsing_result = data_parser.parseDataPerLine();
@@ -86,6 +89,11 @@ int main(int argc, char ** argv)
 			
 			odometry_execute_flag = true;
 	 		new_samples = particleFilter.update(laserRdg);
+
+	 		for (auto s:new_samples)
+	 		{
+	 			std::cout << s << std::endl;
+	 		}
 		}
 		else if((parsing_result == ODOM) && (odometry_execute_flag))
 		{
@@ -101,7 +109,11 @@ int main(int argc, char ** argv)
 				std::cout<<"odometry reading t1: "<<odoRdg_t_1<<std::endl;
 
 				std::pair<str::OdometryReading<double>, str::OdometryReading<double>> odoReadingPair = std::make_pair(odoRdg_t_1, odoRdg_t);
-	 			new_samples = particleFilter.predict(uniform_particles, odoReadingPair);
+	 			new_samples = particleFilter.predict(new_samples, odoReadingPair);
+	 			for (auto s:new_samples)
+		 		{
+		 			std::cout << s << std::endl;
+		 		}
 			}
 			odoRdg_t_1 = odoRdg_t;
 		}
@@ -112,11 +124,13 @@ int main(int argc, char ** argv)
 		
 		for(auto sample:new_samples)
 		{
+			std::cout << "wu la la " << std::endl;
 			cv::Point2f pt(sample.getX(),sample.getY());
-			cv::circle(im_display, pt, 1, cv::Scalar(255,0,0), -1, 8, 0);
+			std::cout << pt.x << "\t" << pt.y;
+			cv::circle(im_display, pt, 50, cv::Scalar(255,0,0), -1, 8, 0);
 		}
 		cv::imshow("MAP", im_display);
-		cv::waitKey(500);
+		cv::waitKey(100000);
 	}
 
 	data_parser.closeFile();

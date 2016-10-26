@@ -1,8 +1,8 @@
 #include "../include/particle_filter.h"
 
 template <typename T>
-str::ParticleFilter<T>::ParticleFilter(int no_samples):no_samples_(no_samples), samples_(no_samples, str::Pose<double>()),
-	samplesTemp_(no_samples, str::Pose<double>()), weights_(std::vector<T>(no_samples, 1)),
+str::ParticleFilter<T>::ParticleFilter(int no_samples, std::vector<str::Pose<T>>& x_prior):no_samples_(no_samples), samples_(x_prior),
+	samplesTemp_(x_prior), weights_(std::vector<T>(no_samples, 1)),
 	map_(str::Map<double>("../data/map/wean.dat")), measurementModel_(map_){
 	//std::cout << "Map Value = " << map_.getLocation(2, 3) << std::endl;
 	std::srand(std::time(0));
