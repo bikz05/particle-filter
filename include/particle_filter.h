@@ -11,28 +11,37 @@
 #include <random>
 #include <utility>
 #include <ctime>
+#include <algorithm>
 
 namespace str{
 
 template <typename T>
 class ParticleFilter{
 	private:
-		Motion_Model_Odom motionModel_;
-		MeasurementModel measurementModel_;
 		int no_samples_;
+		int valid_samples_;
 		std::vector<str::Pose<T>> samples_;
 		std::vector<str::Pose<T>> samplesTemp_;
 		std::vector<T> weights_;
+		str::Map<double> map_;
+		Motion_Model_Odom motionModel_;
+		MeasurementModel measurementModel_;
 		std::random_device rd_;
-
+		int w_slow = 0;
+		int w_fast = 0;
+		// TODO Update these
+		int a_slow = .2;
+		int a_fast = .5;
 		void importanceSampling();
 		void lowVarianceSampling();
+		void augmentedSampling();
+
 	public:
 		ParticleFilter(int no_samples);
-		std::vector<str::Pose<T>>& mcl(const std::vector<str::Pose<T>>& x_tm1,
+		std::vector<str::Pose<T>>& mcl(std::vector<str::Pose<T>>& x_tm1,
 			const std::pair<str::OdometryReading<T>, str::OdometryReading<T>>& odoReadingPair,
 			const str::LaserReading<T>& z_t);
-		std::vector<str::Pose<T>>& predict(const std::vector<str::Pose<T>>& x_tm1,
+		std::vector<str::Pose<T>>& predict(std::vector<str::Pose<T>>& x_tm1,
 			const std::pair<str::OdometryReading<T>, str::OdometryReading<T>>& odoReadingPair);
 		std::vector<str::Pose<T>>& update(const str::LaserReading<T>& z_t, int sampling_type=0);
 };

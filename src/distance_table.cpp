@@ -69,10 +69,12 @@ void str::DistanceTable::calculateDistancePerGrid(const unsigned int& x, const u
 {	
 	double map_value = c_map_.getLocation(x,y);
 	std::cout<<"map_value = "<<map_value<<std::endl;
-
+	correspondence_per_grid_.clear();
 	if( map_value == -1.0 || map_value == 1.0)
 	{
 		std::fill(dist_per_grid.begin(), dist_per_grid.begin()+MEASUREMENT_PER_GRID, 0.0);
+		std::vector<correspondence> temp(MEASUREMENT_PER_GRID, correspondence(x,y,x,y));
+		correspondence_per_grid_ = temp;
 	}
 	else
 	{

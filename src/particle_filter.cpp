@@ -2,11 +2,14 @@
 
 template <typename T>
 str::ParticleFilter<T>::ParticleFilter(int no_samples):no_samples_(no_samples), samples_(no_samples, str::Pose<double>()),
-	samplesTemp_(no_samples, str::Pose<double>()), weights_(std::vector<T>(no_samples, 1)){
+	samplesTemp_(no_samples, str::Pose<double>()), weights_(std::vector<T>(no_samples, 1)),
+	map_(str::Map<double>("../data/map/wean.dat")), measurementModel_(map_){
+	std::cout << "Map Value = " << map_.getLocation(2, 3) << std::endl;
+	std::srand(std::time(0));
 }
 
 template <typename T>
-std::vector<str::Pose<T>>& str::ParticleFilter<T>::mcl(const std::vector<str::Pose<T>>& x_tm1,
+std::vector<str::Pose<T>>& str::ParticleFilter<T>::mcl(std::vector<str::Pose<T>>& x_tm1,
 		const std::pair<str::OdometryReading<T>, str::OdometryReading<T>>& odoReadingPair,
 		const str::LaserReading<T>& z_t){
 
@@ -23,13 +26,14 @@ std::vector<str::Pose<T>>& str::ParticleFilter<T>::mcl(const std::vector<str::Po
 }
 
 template <typename T>
-std::vector<str::Pose<T>>&  str::ParticleFilter<T>::predict(const std::vector<str::Pose<T>>& x_tm1,
+std::vector<str::Pose<T>>&  str::ParticleFilter<T>::predict(std::vector<str::Pose<T>>& x_tm1,
 		const std::pair<str::OdometryReading<T>, str::OdometryReading<T>>& odoReadingPair){
+	this->valid_samples_ = 0;
 	for(int m = 0; m < this->samplesTemp_.size(); m++){
-		// Sample from the motion model
-		this->samplesTemp_[m] = motionModel_.Sample(odoReadingPair, x_tm1[m]);
-		// TODO: Sample from the measurement model
-		// this->weights_[m] = measurementModel_.getProbFromBeamModel(this->samplesTemp_[m]);
+		if(motionModel_.Sample(odoReadingPair, x_tm1[m])){
+			this->samplesTemp_[m] = x_tm1[m];
+			this->valid_samples_++;
+		}
 	}
 	return this->samplesTemp_;
 }
@@ -37,12 +41,27 @@ std::vector<str::Pose<T>>&  str::ParticleFilter<T>::predict(const std::vector<st
 template <typename T>
 std::vector<str::Pose<T>>&  str::ParticleFilter<T>::update(const str::LaserReading<T>& z_t, int samplingType){
 
+	// TODO: Sample from the measurement model
+	// this->weights_[m] = measurementModel_.getProbFromBeamModel(this->samplesTemp_[m]);
+	for(int m = 0; m < this->valid_samples_; m++){
+		std::cout << z_t;
+		std::cout << this->samplesTemp_[m];
+		std::cout << "there" << std::endl;
+		// str::Pose<double> pose(3800,4000,M_PI/2);
+		// this->measurementModel_.getProbability(z_t, pose);
+		this->measurementModel_.getProbability(z_t, this->samplesTemp_[m]);
+		std::cout << "here" << std::endl;
+	}
+
 	// Perform the samlping
 	if(samplingType == 0){
-		importanceSampling();
+		this->importanceSampling();
 	}
 	else if(samplingType == 1){
-		lowVarianceSampling();
+		this->lowVarianceSampling();
+	}
+	else if(samplingType == 2){
+		this->augmentedSampling();
 	}
 	return this->samples_;
 }
@@ -50,8 +69,8 @@ std::vector<str::Pose<T>>&  str::ParticleFilter<T>::update(const str::LaserReadi
 template <typename T>
 void str::ParticleFilter<T>::importanceSampling(){
 	std::mt19937 gen(rd_());
-	std::discrete_distribution<> d(this->weights_.begin(), this->weights_.end());
-	for(int m = 0; m < this->samplesTemp_.size(); m++){
+	std::discrete_distribution<> d(this->weights_.begin(), this->weights_.begin() + this->valid_samples_);
+	for(int m = 0; m < this->no_samples_; m++){
 		int sample_id = d(gen);
 		this->samples_[m] = this->samplesTemp_[sample_id];
 	}
@@ -60,21 +79,49 @@ void str::ParticleFilter<T>::importanceSampling(){
 template <typename T>
 void str::ParticleFilter<T>::lowVarianceSampling(){
 	// Normalize the weights
-	double n = std::accumulate(this->weights_.begin(), this->weights_.end(), 0);
+	double n = std::accumulate(this->weights_.begin(), this->weights_.begin() + this->valid_samples_, 0);
 
-	std::srand(std::time(0));
-	std::cout << no_samples_;
-
-	double r = static_cast<float>(std::rand()) / static_cast<float>(RAND_MAX) / this->no_samples_;
+	double r = static_cast<float>(std::rand()) / static_cast<float>(RAND_MAX) / this->valid_samples_;
 	double c = this->weights_[0] / n;
 	int i = 0;
 
-	for(int m = 0; m < this->samplesTemp_.size(); m++){
-		double U = r + 1.0 * m / this->no_samples_;
+	for(int m = 0; m < this->no_samples_; m++){
+		double U = r + 1.0 * m / this->valid_samples_;
 		while(U > c){
 			i++;
 			c += this->weights_[i] / n;
 		}
 		this->samples_[m] = this->samplesTemp_[i];
+	}
+}
+
+template <typename T>
+void str::ParticleFilter<T>::augmentedSampling(){
+	double w_avg = std::accumulate(this->weights_.begin(), this->weights_.begin() + this->valid_samples_, 0) / this->valid_samples_;
+	this->w_slow += this->a_slow * (w_avg - this->w_slow);
+	this->w_fast += this->a_fast * (w_avg - this->w_fast);
+
+	std::mt19937 gen(rd_());
+	std::discrete_distribution<> d(this->weights_.begin(), this->weights_.begin() + this->valid_samples_);
+
+	for(int m = 0; m < this->no_samples_; m++){
+		double r = static_cast<float>(std::rand()) / static_cast<float>(RAND_MAX) * std::max(0.0, (1.0 - w_fast / w_slow));
+		if(r > .8){
+			// Add Random Pose.
+			// How to determine random pose
+			double x = (static_cast <double> (rand()) / static_cast <double> (RAND_MAX))*7999;
+			double y = (static_cast <double> (rand()) / static_cast <double> (RAND_MAX))*7999;
+			double theta = (static_cast <double> (rand()) / static_cast <double> (RAND_MAX))*6.283185;
+
+			if(theta > 3.14159)
+				theta -= 6.283185;
+
+			int x_grid = std::round(x/10.0) >= 800 ? 799 : std::round(x/10.0);
+			int y_grid = std::round(y/10.0) >= 800 ? 799 : std::round(y/10.0);
+
+			this->samples_[m] = str::Pose<double>(x_grid, y_grid, theta);
+		}
+		int sample_id = d(gen);
+		this->samples_[m] = this->samplesTemp_[sample_id];
 	}
 }

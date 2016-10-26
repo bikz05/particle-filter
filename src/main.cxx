@@ -108,25 +108,23 @@ int main(int argc, char ** argv){
 
 
 
-	// // Test Particle Filter
-	// str::ParticleFilter<double> particleFilter(5);
-	// // Some random poses
-	// std::vector<str::Pose<double>> xtm1;
-	// xtm1.push_back(str::Pose<double>(2, 3, 2, 2));
-	// xtm1.push_back(str::Pose<double>(2, 3, 2, 2));
-	// xtm1.push_back(str::Pose<double>(7, 3, 2, 2));
-	// xtm1.push_back(str::Pose<double>(7, 3, 2, 2));
-	// xtm1.push_back(str::Pose<double>(2, 3, 2, 2));
-	// std::pair<str::OdometryReading<double>, str::OdometryReading<double>> odoReadingPair = std::make_pair(odoRdg_1, odoRdg_2);
-	// //	odoReadingPair.first = odoRdg;
-	// //	odoReadingPair.second = odoRdg;
+	 // Test Particle Filter
+	 str::ParticleFilter<double> particleFilter(5);
+	 // Some random poses
+	 std::vector<str::Pose<double>> xtm1;
+	 xtm1.push_back(str::Pose<double>(2, 3, 2, 2));
+	 xtm1.push_back(str::Pose<double>(2, 3, 2, 2));
+	 xtm1.push_back(str::Pose<double>(7, 3, 2, 2));
+	 xtm1.push_back(str::Pose<double>(7, 3, 2, 2));
+	 xtm1.push_back(str::Pose<double>(2, 3, 2, 2));
+	 std::pair<str::OdometryReading<double>, str::OdometryReading<double>> odoReadingPair = std::make_pair(odoRdg_1, odoRdg_2);
 
-	// // Odometry Reading
-	// auto new_samples = particleFilter.mcl(xtm1, odoReadingPair, laserRdg);
+	 // Odometry Reading
+	 auto new_samples = particleFilter.mcl(xtm1, odoReadingPair, laserRdg);
 
 
-	// for(auto sample: new_samples)
-	// 	std::cout << sample;
+	 for(auto sample: new_samples)
+	 	std::cout << sample;
 
 
 	// Example --> Show Vector
