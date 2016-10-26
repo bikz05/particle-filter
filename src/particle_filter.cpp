@@ -29,7 +29,7 @@ template <typename T>
 std::vector<str::Pose<T>>&  str::ParticleFilter<T>::predict(std::vector<str::Pose<T>>& x_tm1,
 		const std::pair<str::OdometryReading<T>, str::OdometryReading<T>>& odoReadingPair){
 	this->valid_samples_ = 0;
-	for(int m = 0; m < this->samplesTemp_.size(); m++){
+	for(int m = 0; m < this->no_samples_; m++){
 		if(motionModel_.Sample(odoReadingPair, x_tm1[m])){
 			this->samplesTemp_[m] = x_tm1[m];
 			this->valid_samples_++;
@@ -47,9 +47,7 @@ std::vector<str::Pose<T>>&  str::ParticleFilter<T>::update(const str::LaserReadi
 		std::cout << z_t;
 		std::cout << this->samplesTemp_[m];
 		std::cout << "there" << std::endl;
-		// str::Pose<double> pose(3800,4000,M_PI/2);
-		// this->measurementModel_.getProbability(z_t, pose);
-		this->measurementModel_.getProbability(z_t, this->samplesTemp_[m]);
+		this->weights_[m] = this->measurementModel_.getProbability(z_t, this->samplesTemp_[m]);
 		std::cout << "here" << std::endl;
 	}
 
