@@ -4,7 +4,7 @@ template <typename T>
 str::ParticleFilter<T>::ParticleFilter(int no_samples):no_samples_(no_samples), samples_(no_samples, str::Pose<double>()),
 	samplesTemp_(no_samples, str::Pose<double>()), weights_(std::vector<T>(no_samples, 1)),
 	map_(str::Map<double>("../data/map/wean.dat")), measurementModel_(map_){
-	std::cout << "Map Value = " << map_.getLocation(2, 3) << std::endl;
+	//std::cout << "Map Value = " << map_.getLocation(2, 3) << std::endl;
 	std::srand(std::time(0));
 }
 
@@ -44,11 +44,11 @@ std::vector<str::Pose<T>>&  str::ParticleFilter<T>::update(const str::LaserReadi
 	// TODO: Sample from the measurement model
 	// this->weights_[m] = measurementModel_.getProbFromBeamModel(this->samplesTemp_[m]);
 	for(int m = 0; m < this->valid_samples_; m++){
-		std::cout << z_t;
-		std::cout << this->samplesTemp_[m];
-		std::cout << "there" << std::endl;
+		//std::cout << z_t;
+		//std::cout << this->samplesTemp_[m];
+		//std::cout << "there" << std::endl;
 		this->weights_[m] = this->measurementModel_.getProbability(z_t, this->samplesTemp_[m]);
-		std::cout << "here" << std::endl;
+		//std::cout << "here" << std::endl;
 	}
 
 	// Perform the samlping

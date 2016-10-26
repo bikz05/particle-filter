@@ -27,10 +27,17 @@ double str::MeasurementModel::getProbability(const str::LaserReading<double>& la
 	//Step1. get pre-cashing table using pose, should return 180 values
 	//Step2. using table value and laser reading to compute prob using this->getProbFromBeamModel
 	//Step3. calculate overall probability, product of all 180 measurements
+	
+	//std::cout<<pose.getX()<<" "<<pose.getY()<<" "<<pose.getTheta()<<std::endl;
+	str::Pose<double> laser_pose = this->getSensorPose(pose);
+	if(laser_pose.getX() < 0 || laser_pose.getX() > MAP_X_SIZE_IN_CM || laser_pose.getY() < 0 || laser_pose.getY() > MAP_Y_SIZE_IN_CM)
+		return 0;
+	//std::cout<<laser_pose.getX()<<" "<<laser_pose.getY()<<" "<<laser_pose.getTheta()<<std::endl;
+
 
 	double overall_prob = 1;
 	std::vector<double> predict_distance;
-	this->getDistTableByPose(pose, predict_distance);
+	this->getDistTableByPose(laser_pose, predict_distance);
 	std::vector<double> laser_data = laser_reading.getRanges();
 	
 	for (int i = 0; i < 180; ++i)
@@ -50,9 +57,7 @@ double str::MeasurementModel::getProbability(const str::LaserReading<double>& la
 **/
 void str::MeasurementModel::getDistTableByPose(const str::Pose<double>& pose, std::vector<double>& predict_distance)
 {	
-	//std::cout<<pose.getX()<<" "<<pose.getY()<<" "<<pose.getTheta()<<std::endl;
-	str::Pose<double> laser_pose = this->getSensorPose(pose);
-	//std::cout<<laser_pose.getX()<<" "<<laser_pose.getY()<<" "<<laser_pose.getTheta()<<std::endl;
+	str::Pose<double> laser_pose = pose;
 
 	str::Pose<unsigned int> laser_pose_grid;
 	this->poseCoordToGrid(laser_pose, laser_pose_grid);//this function transfer theta to degree
@@ -102,7 +107,7 @@ void str::MeasurementModel::selectDistTableByTheta(const unsigned int& theta_in_
 		//std::cout<<"case 1"<<std::endl;
 		unsigned int start_idx = theta_start;
 		unsigned int end_idx = theta_end;
-		std::cout<<start_idx<<" "<<end_idx<<std::endl;
+		//std::cout<<start_idx<<" "<<end_idx<<std::endl;
 		if( (end_idx - start_idx + 1) != 180)
 			std::cout<<"wrong index in section 1"<<std::endl;
 		std::vector<double> selected_dist_table(dist_table_per_grid.begin()+start_idx, dist_table_per_grid.begin()+end_idx+1);
@@ -253,13 +258,13 @@ void str::MeasurementModel::UnitTest()
 
 	unsigned int theta_in_grid = 90;
 	this->selectDistTableByTheta( theta_in_grid, dist_table_per_grid, coor_per_grid);
-	for(auto ele:dist_table_per_grid)
-	{
-		std::cout<<ele<<" ";
-	}
-	std::cout<<std::endl;
+	// for(auto ele:dist_table_per_grid)
+	// {
+	// 	std::cout<<ele<<" ";
+	// }
+	// std::cout<<std::endl;
 
-	std::cout<<"size = "<<dist_table_per_grid.size()<<std::endl;
+	//std::cout<<"size = "<<dist_table_per_grid.size()<<std::endl;
 
 
 

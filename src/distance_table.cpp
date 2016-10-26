@@ -71,7 +71,7 @@ void str::DistanceTable::calculateDistancePerGrid(const unsigned int& x, const u
 	correspondence_per_grid_.clear();
 
 	double map_value = c_map_.getLocation(x,y);
-	std::cout<<"map_value = "<<map_value<<std::endl;
+	//std::cout<<"map_value = "<<map_value<<std::endl;
 	correspondence_per_grid_.clear();
 	if( map_value == -1.0 || map_value == 1.0)
 	{

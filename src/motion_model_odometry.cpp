@@ -39,7 +39,7 @@ bool Motion_Model_Odom::Sample(const std::pair<OdomRdg,OdomRdg>& control_u, str:
 
 	// TODO
 	if (d_trans <= 0.01 && d_rot_1+d_rot_2 <= 0.001){
-		std::cout << "no motion, should not sample" << std::endl;
+		//std::cout << "no motion, should not sample" << std::endl;
 	}
 	
 	d_rot_1_hat = d_rot_1 - this->SampleNormal(a1_*d_rot_1*d_rot_1 + a2_*d_trans*d_trans);
@@ -50,9 +50,15 @@ bool Motion_Model_Odom::Sample(const std::pair<OdomRdg,OdomRdg>& control_u, str:
 	yp = prev_pose.getY() + d_trans_hat*sin(prev_pose.getTheta()+d_rot_1_hat);
 	thetap = prev_pose.getTheta() + d_rot_1_hat + d_rot_2_hat;
 
-	if(thetap > 6.283185)
+	// if(thetap > 6.283185)
+	// 	thetap -= 6.283185;
+	// if(thetap < -6.283185)
+	// 	thetap += 6.283185
+	if( std::fabs(thetap) > 6.283185)
+		thetap = std::fmod(thetap, 6.283185);
+	if(thetap > 3.14159)
 		thetap -= 6.283185;
-	if(thetap < -6.283185)
+	if(thetap < -3.14159)
 		thetap += 6.283185;
 
 	// str::Pose<double> output_pose(xp, yp, thetap, 1);
