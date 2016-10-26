@@ -1,7 +1,8 @@
 #include "../include/particle_filter.h"
 
 template <typename T>
-str::ParticleFilter<T>::ParticleFilter(int no_samples, std::vector<str::Pose<T>>& x_prior):no_samples_(no_samples), samples_(x_prior),
+str::ParticleFilter<T>::ParticleFilter(int no_samples, std::vector<str::Pose<T>>& x_prior):no_samples_(no_samples), 
+	valid_samples_(no_samples), samples_(x_prior),
 	samplesTemp_(x_prior), weights_(std::vector<T>(no_samples, 1)),
 	map_(str::Map<double>("../data/map/wean.dat")), measurementModel_(map_){
 	//std::cout << "Map Value = " << map_.getLocation(2, 3) << std::endl;
@@ -21,7 +22,7 @@ std::vector<str::Pose<T>>& str::ParticleFilter<T>::mcl(std::vector<str::Pose<T>>
 	**/
 
 	this->predict(x_tm1, odoReadingPair);
-	this->update(z_t, 1);
+	this->update(z_t, 0);
 	return this->samples_;
 }
 
@@ -29,10 +30,17 @@ template <typename T>
 std::vector<str::Pose<T>>&  str::ParticleFilter<T>::predict(std::vector<str::Pose<T>>& x_tm1,
 		const std::pair<str::OdometryReading<T>, str::OdometryReading<T>>& odoReadingPair){
 	this->valid_samples_ = 0;
+
+	for(auto & sample: x_tm1){
+			std::cout << "IN" << sample << std::endl << std::endl;	
+	}
+
 	for(int m = 0; m < this->no_samples_; m++){
 		if(motionModel_.Sample(odoReadingPair, x_tm1[m])){
 			this->samplesTemp_[m] = x_tm1[m];
 			this->valid_samples_++;
+
+			std::cout << "OUT" << this->samplesTemp_[m] << std::endl;
 		}
 	}
 	return this->samplesTemp_;
@@ -47,8 +55,9 @@ std::vector<str::Pose<T>>&  str::ParticleFilter<T>::update(const str::LaserReadi
 		//std::cout << z_t;
 		//std::cout << this->samplesTemp_[m];
 		//std::cout << "there" << std::endl;
+		std::cout << "Weights before" << this->weights_[m] << std::endl;
 		this->weights_[m] = this->measurementModel_.getProbability(z_t, this->samplesTemp_[m]);
-		//std::cout << "here" << std::endl;
+		std::cout << "Weights after" << this->weights_[m] << std::endl;
 	}
 
 	// Perform the samlping

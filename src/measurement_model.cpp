@@ -35,7 +35,8 @@ double str::MeasurementModel::getProbability(const str::LaserReading<double>& la
 	//std::cout<<laser_pose.getX()<<" "<<laser_pose.getY()<<" "<<laser_pose.getTheta()<<std::endl;
 
 
-	double overall_prob = 1;
+	// double overall_prob = 1;
+	double overall_prob = 0;
 	std::vector<double> predict_distance;
 	this->getDistTableByPose(laser_pose, predict_distance);
 	std::vector<double> laser_data = laser_reading.getRanges();
@@ -46,7 +47,8 @@ double str::MeasurementModel::getProbability(const str::LaserReading<double>& la
 		double z_t_k_star = predict_distance.at(i);
 
 		double prob = this->getProbFromBeamModel( laser_data[i] ,z_t_k_star);
-		overall_prob *= prob;
+		// overall_prob *= prob;
+		overall_prob += std::log(prob);
 	}
 
 	return overall_prob;
@@ -193,7 +195,7 @@ double str::MeasurementModel::getProbFromBeamModel(const double& measurement, co
 	double w_p_max = params_.w_max * this->prob_max(measurement);
 	double w_p_rand = params_.w_rand * this->prob_rand(measurement);
 
-	//std::cout<<"prob: "<<w_p_hit + w_p_short + w_p_max + w_p_rand<<" measure: "<<measurement<<" predict: "<<predict_measurement<<" w_p_hit: "<<w_p_hit<<" w_p_short: "<<w_p_short<<" w_p_max: "<<w_p_max<<" w_p_rand: "<<w_p_rand<<std::endl;
+	// std::cout<<"prob: "<<w_p_hit + w_p_short + w_p_max + w_p_rand<<" measure: "<<measurement<<" predict: "<<predict_measurement<<" w_p_hit: "<<w_p_hit<<" w_p_short: "<<w_p_short<<" w_p_max: "<<w_p_max<<" w_p_rand: "<<w_p_rand<<std::endl;
 
 	return w_p_hit + w_p_short + w_p_max + w_p_rand;
 }

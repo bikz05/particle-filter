@@ -40,6 +40,7 @@ std::vector<str::Pose<double>> getUniformParticles(str::Map<double> map, const i
 
 			cv::circle(image, point, 1, cv::Scalar(255,0,0), -1, 8, 0);
 
+
 			++count;
 		}
 	
@@ -52,7 +53,7 @@ std::vector<str::Pose<double>> getUniformParticles(str::Map<double> map, const i
 
 int main(int argc, char ** argv)
 {
-	int num_of_sample = 2000;
+	int num_of_sample = 20000;
 	std::cout << "Particle Filter Assignment" << std::endl;
 
 
@@ -74,21 +75,23 @@ int main(int argc, char ** argv)
 	cv::imshow("MAP", im_display);
 	cv::waitKey(1000);
 	auto new_samples = uniform_particles;
-	bool odometry_execute_flag = true;
+	bool odometry_execute_flag = false;
 	bool odometry_first_reading = false;
 	str::ParticleFilter<double> particleFilter(num_of_sample, uniform_particles);
 
-	for (int i = 0; i < 1; ++i)
+	for (int i = 0; i < 100; ++i)
 	{
 		im_display = im.clone();
 		auto parsing_result = data_parser.parseDataPerLine();
 		if (parsing_result == LASER)
 		{
 			auto laserRdg = data_parser.laser_reading;
-			std::cout<<"laser reading: "<<laserRdg<<std::endl;
+			// std::cout<<"laser reading: "<<laserRdg<<std::endl;
 			
 			odometry_execute_flag = true;
 	 		new_samples = particleFilter.update(laserRdg);
+
+	 		std::cout << "LASER" << std::endl;
 
 	 		for (auto s:new_samples)
 	 		{
@@ -105,8 +108,10 @@ int main(int argc, char ** argv)
 			}
 			else
 			{
-				std::cout<<"odometry reading t: "<<odoRdg_t<<std::endl;
-				std::cout<<"odometry reading t1: "<<odoRdg_t_1<<std::endl;
+				// std::cout<<"odometry reading t: "<<odoRdg_t<<std::endl;
+				// std::cout<<"odometry reading t1: "<<odoRdg_t_1<<std::endl;
+
+				std::cout << "ODOM" << std::endl;
 
 				std::pair<str::OdometryReading<double>, str::OdometryReading<double>> odoReadingPair = std::make_pair(odoRdg_t_1, odoRdg_t);
 	 			new_samples = particleFilter.predict(new_samples, odoReadingPair);
@@ -124,13 +129,13 @@ int main(int argc, char ** argv)
 		
 		for(auto sample:new_samples)
 		{
-			std::cout << "wu la la " << std::endl;
-			cv::Point2f pt(sample.getX(),sample.getY());
-			std::cout << pt.x << "\t" << pt.y;
-			cv::circle(im_display, pt, 50, cv::Scalar(255,0,0), -1, 8, 0);
+			cv::Point2i pt = cv::Point2i(static_cast<int>(sample.getX()/10),static_cast<int>(sample.getY()/10));
+			cv::circle(im_display, pt, 1, cv::Scalar(0,0,255), -1, 8, 0);
 		}
+
+
 		cv::imshow("MAP", im_display);
-		cv::waitKey(100000);
+		cv::waitKey(1000);
 	}
 
 	data_parser.closeFile();
