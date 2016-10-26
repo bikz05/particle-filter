@@ -6,6 +6,8 @@
 #include "../include/odometry_reading.h"
 #include "../include/distance_table.h"
 #include "../include/map.h"
+#include <numeric>
+
 
 namespace str
 {
