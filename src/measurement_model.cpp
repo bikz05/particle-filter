@@ -70,9 +70,11 @@ void str::MeasurementModel::getDistTableByPose(const str::Pose<double>& pose, st
 	// {
 	// 	std::cout<<ele<<" ";
 	// }
-
+	// std::cout<<std::endl;
 	dist_table_per_grid = dist_table_->getDistPerGrid(x, y);
-	std::vector<correspondence> corr_per_grid =  dist_table_->getCorrespondencePerGrid(x,y);
+	std::vector<correspondence>corr_per_grid =  dist_table_->getCorrespondencePerGrid(x,y);
+	
+	//std::cout<<"corr size = "<<corr_per_grid.size()<<std::endl;
 	this->selectDistTableByTheta(theta, dist_table_per_grid, corr_per_grid);
 	// for(auto ele:dist_table_per_grid)
 	// {
@@ -94,20 +96,21 @@ void str::MeasurementModel::selectDistTableByTheta(const unsigned int& theta_in_
 	unsigned int theta_start = (robot_theta - 90 + 1 + 360)%360;
 	unsigned int theta_end = (robot_theta + 90)%360;
 	
-	
+	//std::cout<<"size = "<<corr_per_grid.size()<<std::endl;
 	if( theta_start < theta_end )
 	{
 		//std::cout<<"case 1"<<std::endl;
 		unsigned int start_idx = theta_start;
 		unsigned int end_idx = theta_end;
+		std::cout<<start_idx<<" "<<end_idx<<std::endl;
 		if( (end_idx - start_idx + 1) != 180)
 			std::cout<<"wrong index in section 1"<<std::endl;
-		
 		std::vector<double> selected_dist_table(dist_table_per_grid.begin()+start_idx, dist_table_per_grid.begin()+end_idx+1);
+
 		std::vector<correspondence> selected_corr(corr_per_grid.begin()+start_idx, corr_per_grid.begin()+end_idx+1);
 
 		dist_table_per_grid = selected_dist_table;
-		corr_per_grid = selected_corr;
+		//corr_per_grid = selected_corr;
 	}
 	else if( theta_start > theta_end )
 	{
@@ -154,6 +157,10 @@ void str::MeasurementModel::selectDistTableByTheta(const unsigned int& theta_in_
 **/
 void str::MeasurementModel::poseCoordToGrid(const str::Pose<double>& pose_coord, str::Pose<unsigned int>& pose_grid)
 {
+	if(pose_coord.getX()<0 || pose_coord.getY() <0)
+		std::cout<<"Error: coord out of range coord: "<<pose_coord.getX()<<" "<<pose_coord.getY()<<std::endl;
+
+
 	str::Pose<double> copy_pose = pose_coord;
 	pose_grid.setX(static_cast<unsigned int>(round(copy_pose.getX()/MAP_RESOLUTION)));
 	pose_grid.setY(static_cast<unsigned int>(round(copy_pose.getY()/MAP_RESOLUTION)));
@@ -244,7 +251,7 @@ void str::MeasurementModel::UnitTest()
 	std::iota(dist_table_per_grid.begin(), dist_table_per_grid.end(), 0);
 	
 
-	unsigned int theta_in_grid = 180;
+	unsigned int theta_in_grid = 90;
 	this->selectDistTableByTheta( theta_in_grid, dist_table_per_grid, coor_per_grid);
 	for(auto ele:dist_table_per_grid)
 	{
@@ -266,9 +273,9 @@ void str::MeasurementModel::UnitTest()
 	cvtColor( im, im, cv::COLOR_GRAY2BGR );
 	str::MeasurementModel measurement(map);
 	//test num
-	double x = 3950;
-	double y = 4000;
-	double theta = -M_PI;
+	double x = 7500;
+	double y = 7000;
+	double theta = 2;
 	
 	str::Pose<double> pose(x, y, theta);
 	std::vector<double> predict_dist;

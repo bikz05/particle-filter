@@ -61,19 +61,26 @@ std::vector<double> str::DistanceTable::getDistPerGrid(const unsigned int& x, co
 std::vector<correspondence> str::DistanceTable::getCorrespondencePerGrid(const unsigned int& x, const unsigned int& y)
 {
 	unsigned int id = this->coordToGridID(x,y);
+	//std::cout<<"ccc = "<<corr_hashtable_[id].size();
 	return corr_hashtable_[id];
 }
 
 
 void str::DistanceTable::calculateDistancePerGrid(const unsigned int& x, const unsigned int& y, std::vector<double>& dist_per_grid)
 {	
+	correspondence_per_grid_.clear();
+
 	double map_value = c_map_.getLocation(x,y);
 	std::cout<<"map_value = "<<map_value<<std::endl;
 	correspondence_per_grid_.clear();
 	if( map_value == -1.0 || map_value == 1.0)
 	{
 		std::fill(dist_per_grid.begin(), dist_per_grid.begin()+MEASUREMENT_PER_GRID, 0.0);
+<<<<<<< HEAD
 		std::vector<correspondence> temp(MEASUREMENT_PER_GRID, correspondence(x,y,x,y));
+=======
+		std::vector<correspondence> temp(MEASUREMENT_PER_GRID,correspondence(x,y,x,y));
+>>>>>>> 5bbd7c97fdd2e084743267daea4ff974ee939c97
 		correspondence_per_grid_ = temp;
 	}
 	else
@@ -131,10 +138,12 @@ double str::DistanceTable::calculateDistance(const unsigned int& x, const unsign
 	//std::cout<<cur_x<<" "<<cur_y<<" "<<std::endl;
 	//for unit test
 	correspondence corrd(x, y, static_cast<unsigned int>(x + dx), static_cast<unsigned int>(y + dy));
+	
 	correspondence_per_grid_.push_back(corrd);
 
 	return sqrt(dx*dx + dy*dy);
 }
+<<<<<<< HEAD
 
 
 /*
@@ -184,3 +193,5 @@ int main(int argc, char** argv)
 	return 0;
 }
 */
+=======
+>>>>>>> 5bbd7c97fdd2e084743267daea4ff974ee939c97
