@@ -110,6 +110,22 @@ void str::ParticleFilter<T>::importanceSampling(){
 
 template <typename T>
 void str::ParticleFilter<T>::lowVarianceSampling(){
+
+	// Normalization Trick
+	auto max_iter = std::max_element(this->weights_.begin(), this->weights_.end());
+	auto min_iter = std::min_element(this->weights_.begin(), this->weights_.end());
+	T max_value = *max_iter;
+	T min_value = *min_iter;
+	T norm_value = max_value - min_value;
+	auto minus_min = [&min_value](T a){return a - min_value;};
+	auto norm = [&norm_value](T a){return a / norm_value;};
+	std::transform(this->weights_.begin(), this->weights_.end(), this->weights_.begin(), minus_min);
+	std::transform(this->weights_.begin(), this->weights_.end(), this->weights_.begin(), norm);
+
+	for(auto weight: this->weights_)
+		std::cout << "Weight = " << weight << std::endl;
+	std::cout << std::endl;
+
 	// Normalize the weights
 	double n = std::accumulate(this->weights_.begin(), this->weights_.begin() + this->valid_samples_, 0);
 	double r = static_cast<float>(std::rand()) / static_cast<float>(RAND_MAX) / this->valid_samples_;
@@ -123,9 +139,9 @@ void str::ParticleFilter<T>::lowVarianceSampling(){
 		{
 			i++;
 			c += (this->weights_[i] / n);
+		this->samples_[m] = this->samplesTemp_[i];
 		}
 		//std::cout<<"index m = "<<m<<" index i ="<<i<<std::endl;
-		this->samples_[m] = this->samplesTemp_[i];
 	}
 }
 
