@@ -32,6 +32,8 @@ class OdometryReading{
 		OdometryReading(Pose<T> pose, T timestamp):pose_(pose), timestamp_(timestamp){
 		}
 
+		inline bool operator==(const OdometryReading& rhs) const {return (this->getX()==rhs.getX() && this->getY()==rhs.getY() && this->getTheta()==rhs.getTheta());};
+
 		void setX(T x){
 			this->pose_.setX(x); 			// Sam changed
 		}

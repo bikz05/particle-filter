@@ -30,17 +30,17 @@ template <typename T>
 std::vector<str::Pose<T>>&  str::ParticleFilter<T>::predict(std::vector<str::Pose<T>>& x_tm1,
 		const std::pair<str::OdometryReading<T>, str::OdometryReading<T>>& odoReadingPair){
 	this->valid_samples_ = 0;
-
-	for(auto & sample: x_tm1){
-			std::cout << "IN" << sample << std::endl << std::endl;	
-	}
+	
+	// for(auto & sample: x_tm1){
+	// 		//std::cout << "IN" << sample << std::endl << std::endl;	
+	// }
 
 	for(int m = 0; m < this->no_samples_; m++){
 		if(motionModel_.Sample(odoReadingPair, x_tm1[m])){
 			this->samplesTemp_[m] = x_tm1[m];
 			this->valid_samples_++;
 
-			std::cout << "OUT" << this->samplesTemp_[m] << std::endl;
+			//std::cout << "OUT" << this->samplesTemp_[m] << std::endl;
 		}
 	}
 	return this->samplesTemp_;
@@ -55,21 +55,46 @@ std::vector<str::Pose<T>>&  str::ParticleFilter<T>::update(const str::LaserReadi
 		//std::cout << z_t;
 		//std::cout << this->samplesTemp_[m];
 		//std::cout << "there" << std::endl;
-		std::cout << "Weights before" << this->weights_[m] << std::endl;
+		//std::cout << "Weights before" << this->weights_[m] << std::endl;
+		
 		this->weights_[m] = this->measurementModel_.getProbability(z_t, this->samplesTemp_[m]);
-		std::cout << "Weights after" << this->weights_[m] << std::endl;
+		
+		this->samplesTemp_[m].setWeight(this->weights_[m]);
+		//std::cout << "Weights after " << this->samplesTemp_[m].getWeight() << std::endl;
 	}
+	
 
 	// Perform the samlping
+	//std::cout<<"samplingType = "<<samplingType<<std::endl;
+	// for(unsigned int i = 0; i < this->samples_.size(); i++)
+	// {
+	// 	std::cout<<"before"<<this->samples_[i]<<std::endl;
+	// }
+
 	if(samplingType == 0){
 		this->importanceSampling();
 	}
 	else if(samplingType == 1){
+		//std::cout<<"low variacne"<<std::endl;
 		this->lowVarianceSampling();
 	}
 	else if(samplingType == 2){
 		this->augmentedSampling();
 	}
+
+	// for(auto sample:this->samples_)
+	// {
+	// 	std::cout<<sample.getWeight()<<" ";
+	// }
+	// std::cout<<std::endl;
+
+	// std::sort(this->samples_.begin(),this->samples_.end() , []( str::Pose<T> a,  str::Pose<T> b)->bool{ return a.getWeight() < b.getWeight(); });
+	// for(unsigned int i = 0; i < 10; i++)
+	// {
+	// 	//std::cout<<"before : "<<this->samples_[i]<<std::endl;
+	// 	this->randomSampleGenerator(this->samples_[i]);
+	// 	//std::cout<<"after: "<<this->samples_[i]<<std::endl;
+	// }
 	return this->samples_;
 }
 
@@ -87,17 +112,19 @@ template <typename T>
 void str::ParticleFilter<T>::lowVarianceSampling(){
 	// Normalize the weights
 	double n = std::accumulate(this->weights_.begin(), this->weights_.begin() + this->valid_samples_, 0);
-
 	double r = static_cast<float>(std::rand()) / static_cast<float>(RAND_MAX) / this->valid_samples_;
 	double c = this->weights_[0] / n;
 	int i = 0;
 
-	for(int m = 0; m < this->no_samples_; m++){
+	for(int m = 0; m < this->no_samples_; m++)
+	{
 		double U = r + 1.0 * m / this->valid_samples_;
-		while(U > c){
+		while(U > c)
+		{
 			i++;
-			c += this->weights_[i] / n;
+			c += (this->weights_[i] / n);
 		}
+		//std::cout<<"index m = "<<m<<" index i ="<<i<<std::endl;
 		this->samples_[m] = this->samplesTemp_[i];
 	}
 }
@@ -120,8 +147,13 @@ void str::ParticleFilter<T>::augmentedSampling(){
 			double y = (static_cast <double> (rand()) / static_cast <double> (RAND_MAX))*7999;
 			double theta = (static_cast <double> (rand()) / static_cast <double> (RAND_MAX))*6.283185;
 
+
+			if( std::fabs(theta) > 6.283185)
+				theta = std::fmod(theta, 6.283185);
 			if(theta > 3.14159)
 				theta -= 6.283185;
+			if(theta < -3.14159)
+				theta += 6.283185;
 
 			int x_grid = std::round(x/10.0) >= 800 ? 799 : std::round(x/10.0);
 			int y_grid = std::round(y/10.0) >= 800 ? 799 : std::round(y/10.0);
@@ -131,4 +163,35 @@ void str::ParticleFilter<T>::augmentedSampling(){
 		int sample_id = d(gen);
 		this->samples_[m] = this->samplesTemp_[sample_id];
 	}
+}
+
+template <typename T>
+void str::ParticleFilter<T>::randomSampleGenerator(str::Pose<T>& pose)
+{
+	bool generate_sample = true;
+	double x; double y; double theta;
+	while(generate_sample)
+	{
+		x = (static_cast <double> (rand()) / static_cast <double> (RAND_MAX))*7999;
+		y = (static_cast <double> (rand()) / static_cast <double> (RAND_MAX))*7999;
+		theta = (static_cast <double> (rand()) / static_cast <double> (RAND_MAX))*6.283185;
+
+
+		if( std::fabs(theta) > 6.283185)
+			theta = std::fmod(theta, 6.283185);
+		if(theta > 3.14159)
+			theta -= 6.283185;
+		if(theta < -3.14159)
+			theta += 6.283185;
+
+		int x_grid = std::round(x/10.0) >= 800 ? 799 : std::round(x/10.0);
+		int y_grid = std::round(y/10.0) >= 800 ? 799 : std::round(y/10.0);
+
+		if(map_.getLocation(x_grid,y_grid) < 0.1 && map_.getLocation(x_grid,y_grid) >= 0)
+			generate_sample = false;
+	}
+	pose.setX(x);
+	pose.setY(y);
+	pose.setTheta(theta);
+	pose.setWeight(1);
 }

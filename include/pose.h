@@ -85,7 +85,7 @@ class Pose{
 
 template <typename T>
 std::ostream& operator<<(std::ostream& out, const str::Pose<T>& pose){
-	out << "( x = " << pose.x_ << ", y = " << pose.y_ << ", theta = " << pose.theta_ << ")" << std::endl;
+	out << "( x = " << pose.x_ << ", y = " << pose.y_ << ", theta = " << pose.theta_ << ", weight = " << pose.weight_ << ")" << std::endl;
 	return out;
 }
 

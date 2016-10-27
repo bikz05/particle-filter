@@ -35,6 +35,7 @@ class ParticleFilter{
 		void importanceSampling();
 		void lowVarianceSampling();
 		void augmentedSampling();
+		void randomSampleGenerator(str::Pose<T>& pose);
 
 	public:
 		ParticleFilter(int no_samples, std::vector<str::Pose<T>>& x_prior);

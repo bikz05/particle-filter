@@ -4,10 +4,10 @@ namespace str{
 
 // template <typename T>
 Motion_Model_Odom::Motion_Model_Odom() : 
-	a1_(.0005),
-	a2_(.0005),
-	a3_(.03),
-	a4_(.03)
+	a1_(0.005),
+	a2_(0.005),
+	a3_(0.005),
+	a4_(0.005)
 {
 
 }

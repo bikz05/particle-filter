@@ -4,7 +4,7 @@ project(particle_filter)
 # Set C++ 11
 add_definitions(-std=c++11)
 
-SET(CMAKE_CXX_FLAGS "-Wall -O3")
+SET(CMAKE_CXX_FLAGS "-Wall -O3 -fopenmp")
 message(${CMAKE_CXX_FLAGS})
 
 

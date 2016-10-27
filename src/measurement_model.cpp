@@ -35,23 +35,29 @@ double str::MeasurementModel::getProbability(const str::LaserReading<double>& la
 	//std::cout<<laser_pose.getX()<<" "<<laser_pose.getY()<<" "<<laser_pose.getTheta()<<std::endl;
 
 
-	// double overall_prob = 1;
+	//double overall_prob = 1;
 	double overall_prob = 0;
 	std::vector<double> predict_distance;
 	this->getDistTableByPose(laser_pose, predict_distance);
 	std::vector<double> laser_data = laser_reading.getRanges();
-	
-	for (int i = 0; i < 180; ++i)
+	for (int i = 0; i < 180; i+=2)
 	{
+		
+		
 		// get z_t_k* using pose and measurement idx
-		double z_t_k_star = predict_distance.at(i);
+		if((i > 0 && i <= 60) || (i > 120 && i < 180))
+		{
+			// get z_t_k* using pose and measurement idx
+			//std::cout<<i<<std::endl;
+			double z_t_k_star = predict_distance.at(i);
 
-		double prob = this->getProbFromBeamModel( laser_data[i] ,z_t_k_star);
-		// overall_prob *= prob;
-		overall_prob += std::log(prob);
+			double prob = this->getProbFromBeamModel( laser_data[i] ,z_t_k_star);
+			//overall_prob *= prob;
+			overall_prob += std::log(prob);
+		}
 	}
-
-	return overall_prob;
+	//return overall_prob;
+	return exp(overall_prob);
 }
 
 /**
@@ -195,9 +201,10 @@ double str::MeasurementModel::getProbFromBeamModel(const double& measurement, co
 	double w_p_max = params_.w_max * this->prob_max(measurement);
 	double w_p_rand = params_.w_rand * this->prob_rand(measurement);
 
-	// std::cout<<"prob: "<<w_p_hit + w_p_short + w_p_max + w_p_rand<<" measure: "<<measurement<<" predict: "<<predict_measurement<<" w_p_hit: "<<w_p_hit<<" w_p_short: "<<w_p_short<<" w_p_max: "<<w_p_max<<" w_p_rand: "<<w_p_rand<<std::endl;
+	//std::cout<<"prob: "<<std::log(w_p_hit + w_p_short + w_p_max + w_p_rand)<<" measure: "<<measurement<<" predict: "<<predict_measurement<<" w_p_hit: "<<w_p_hit<<" w_p_short: "<<w_p_short<<" w_p_max: "<<w_p_max<<" w_p_rand: "<<w_p_rand<<std::endl;
 
 	return w_p_hit + w_p_short + w_p_max + w_p_rand;
+	//return w_p_hit;
 }
 
 /**
@@ -215,6 +222,7 @@ double str::MeasurementModel::prob_hit(const double& measurement, const double& 
 {
 	double variance = params_.sigma_hit * params_.sigma_hit;
 	double eta = 1/sqrt(2 * M_PI * variance);
+	//double eta = 1;
 	double diff = measurement - predict_measurement;
 	double p_hit = eta*exp(-0.5 * diff * diff / variance);
 	return (measurement >= 0 && measurement <= z_max_) ? p_hit : 0.0;
@@ -235,7 +243,7 @@ double str::MeasurementModel::prob_short(const double& measurement, const double
 **/
 double str::MeasurementModel::prob_max(const double& measurement)
 {
-	return (measurement == z_max_) ? 1.0 : 0.0;
+	return (measurement >= z_max_) ? 1.0 : 0.0;
 }
 
 /**

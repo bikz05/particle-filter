@@ -22,12 +22,12 @@ namespace str
 			//tuning parameters for sensor model(TBD)
 			struct tuningParameters
 			{
-				double w_hit = 1.0;
-				double w_short = 1.0;
-				double w_max = 1.0;
-				double w_rand = 1.0;
-				double sigma_hit = 30.0;
-				double lambda_short = 1.0;
+				double w_hit = 1000; //1000
+				double w_short = 10; //10
+				double w_max = 0.5;  //0.5
+				double w_rand = 0.5; //0.5
+				double sigma_hit = 300; //300
+				double lambda_short = 0.005; //0.005
 			};
 			MeasurementModel(){};
 			MeasurementModel(str::Map<double>& map);
@@ -49,7 +49,7 @@ namespace str
 			double prob_max(const double& measurement);
 			double prob_rand(const double& measurement);
 			inline str::Pose<double> getSensorPose(const str::Pose<double>& pose)
-				{return str::Pose<double> (pose.getX()+sensor_dist_*std::cos(pose.getTheta()), pose.getY()+sensor_dist_*std::sin(pose.getTheta()), pose.getTheta(), 1);}
+				{return str::Pose<double> (pose.getX()+sensor_dist_*std::cos(pose.getTheta()), pose.getY()+sensor_dist_*std::sin(pose.getTheta()), pose.getTheta(), pose.getWeight());}
 			
 
 			str::DistanceTable* dist_table_;

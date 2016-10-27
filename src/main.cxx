@@ -24,8 +24,12 @@ std::vector<str::Pose<double>> getUniformParticles(str::Map<double> map, const i
 		double y = (static_cast <double> (rand()) / static_cast <double> (RAND_MAX))*7999;
 		double theta = (static_cast <double> (rand()) / static_cast <double> (RAND_MAX))*6.283185;
 
+		if( std::fabs(theta) > 6.283185)
+			theta = std::fmod(theta, 6.283185);
 		if(theta > 3.14159)
 			theta -= 6.283185;
+		if(theta < -3.14159)
+			theta += 6.283185;
 
 		int x_grid = std::round(x/10.0) >= 800 ? 799 : std::round(x/10.0);
 		int y_grid = std::round(y/10.0) >= 800 ? 799 : std::round(y/10.0);
@@ -53,7 +57,7 @@ std::vector<str::Pose<double>> getUniformParticles(str::Map<double> map, const i
 
 int main(int argc, char ** argv)
 {
-	int num_of_sample = 20000;
+	int num_of_sample = 3000;
 	std::cout << "Particle Filter Assignment" << std::endl;
 
 
@@ -70,17 +74,24 @@ int main(int argc, char ** argv)
 	cv::Mat im_display = im.clone();
 	cv::namedWindow("MAP", cv::WINDOW_NORMAL);
 	str::LogDataParser data_parser("../data/log/robotdata1.log");
-
+	//str::LogDataParser data_parser("../data/log/ascii-robotdata3.log");
 	auto uniform_particles = getUniformParticles(map, num_of_sample, im_display);
+	cv::transpose(im_display, im_display);
+ 	cv::flip(im_display, im_display, 0);
 	cv::imshow("MAP", im_display);
-	cv::waitKey(1000);
+	cv::waitKey(5);
 	auto new_samples = uniform_particles;
 	bool odometry_execute_flag = false;
 	bool odometry_first_reading = false;
-	str::ParticleFilter<double> particleFilter(num_of_sample, uniform_particles);
+	str::ParticleFilter<double> particleFilter(num_of_sample, new_samples);
 
-	for (int i = 0; i < 100; ++i)
+	for (int i = 0; i < 2200; ++i)
 	{
+		// if(i<100)
+		// 	num_of_sample = 5000;
+		// else
+		// 	num_of_sample = 3000;
+
 		im_display = im.clone();
 		auto parsing_result = data_parser.parseDataPerLine();
 		if (parsing_result == LASER)
@@ -89,17 +100,17 @@ int main(int argc, char ** argv)
 			// std::cout<<"laser reading: "<<laserRdg<<std::endl;
 			
 			odometry_execute_flag = true;
-	 		new_samples = particleFilter.update(laserRdg);
+	 		new_samples = particleFilter.update(laserRdg,1);
+	 		//std::cout << "LASER" << std::endl;
 
-	 		std::cout << "LASER" << std::endl;
-
-	 		for (auto s:new_samples)
-	 		{
-	 			std::cout << s << std::endl;
-	 		}
+	 		// for (auto s:new_samples)
+	 		// {
+	 		// 	std::cout << s << std::endl;
+	 		// }
 		}
 		else if((parsing_result == ODOM) && (odometry_execute_flag))
 		{
+			
 			odoRdg_t = data_parser.odom_reading;
 			if(odometry_first_reading == false)
 			{
@@ -108,18 +119,18 @@ int main(int argc, char ** argv)
 			}
 			else
 			{
-				// std::cout<<"odometry reading t: "<<odoRdg_t<<std::endl;
-				// std::cout<<"odometry reading t1: "<<odoRdg_t_1<<std::endl;
-
-				std::cout << "ODOM" << std::endl;
+				//std::cout<<"odometry reading t: "<<odoRdg_t<<std::endl;
+				//std::cout<<"odometry reading t1: "<<odoRdg_t_1<<std::endl;
+				//std::cout << "ODOM" << std::endl;
 
 				std::pair<str::OdometryReading<double>, str::OdometryReading<double>> odoReadingPair = std::make_pair(odoRdg_t_1, odoRdg_t);
 	 			new_samples = particleFilter.predict(new_samples, odoReadingPair);
-	 			for (auto s:new_samples)
-		 		{
-		 			std::cout << s << std::endl;
-		 		}
+	 			// for (auto s:new_samples)
+		 		// {
+		 		// 	std::cout << s << std::endl;
+		 		// }
 			}
+
 			odoRdg_t_1 = odoRdg_t;
 		}
 		else
@@ -130,12 +141,15 @@ int main(int argc, char ** argv)
 		for(auto sample:new_samples)
 		{
 			cv::Point2i pt = cv::Point2i(static_cast<int>(sample.getX()/10),static_cast<int>(sample.getY()/10));
-			cv::circle(im_display, pt, 1, cv::Scalar(0,0,255), -1, 8, 0);
-		}
+			cv::circle(im_display, pt, 3, cv::Scalar(0,0,255), -1, 8, 0);
+		}	
+		cv::transpose(im_display, im_display);
+ 		cv::flip(im_display, im_display, 0);
 
 
 		cv::imshow("MAP", im_display);
-		cv::waitKey(1000);
+		cv::waitKey(1);
+		std::cout<<i<<std::endl;
 	}
 
 	data_parser.closeFile();

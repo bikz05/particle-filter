@@ -1,5 +1,6 @@
 clc
 clear
+close all
 start = 0;
 final = 1000;
 n = 10000;
@@ -11,16 +12,17 @@ z_pred = 500; %predict measurement
 %tuning parameters
 w_hit = 1;
 w_short = 1;
-w_max = 0.01;
-w_rand = 1;
-lambda_short = 0.005;
-sigma_hit = 30;
-z_max = 980; %max measurement dist
+w_max = 0.5;
+w_rand = 100;
+sigma_hit = 100;
+lambda_short = 0.05;
+
+z_max = 8000; %max measurement dist
 
 %p_hit
 p_hit = zeros(1,n);
 eta_hit = 1/((2*pi*(sigma_hit^2))^0.5); 
-
+eta_hit = 1;
 for i = 1:length(z_sample)
     if z_sample(i) >= 0 && z_sample(i) <= z_max
         p_hit(i)  = eta_hit.*exp(-1/2 .* ((z_sample(i) - z_pred)/(sigma_hit)).^2);
