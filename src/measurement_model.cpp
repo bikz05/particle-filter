@@ -27,13 +27,15 @@ double str::MeasurementModel::getProbability(const str::LaserReading<double>& la
 	//Step1. get pre-cashing table using pose, should return 180 values
 	//Step2. using table value and laser reading to compute prob using this->getProbFromBeamModel
 	//Step3. calculate overall probability, product of all 180 measurements
-	
+	//std::cout<<"pose = "<<pose;
 	//std::cout<<pose.getX()<<" "<<pose.getY()<<" "<<pose.getTheta()<<std::endl;
 	str::Pose<double> laser_pose = this->getSensorPose(pose);
 	if(laser_pose.getX() < 0 || laser_pose.getX() > MAP_X_SIZE_IN_CM || laser_pose.getY() < 0 || laser_pose.getY() > MAP_Y_SIZE_IN_CM)
+	{
+		std::cout<<"pose out of boundary, return 0 probability"<<std::endl;
 		return 0;
+	}
 	//std::cout<<laser_pose.getX()<<" "<<laser_pose.getY()<<" "<<laser_pose.getTheta()<<std::endl;
-
 
 	//double overall_prob = 1;
 	double overall_prob = 0;
@@ -42,8 +44,6 @@ double str::MeasurementModel::getProbability(const str::LaserReading<double>& la
 	std::vector<double> laser_data = laser_reading.getRanges();
 	for (int i = 0; i < 180; i+=2)
 	{
-		
-		
 		// get z_t_k* using pose and measurement idx
 		if((i > 0 && i <= 60) || (i > 120 && i < 180))
 		{
@@ -70,7 +70,7 @@ void str::MeasurementModel::getDistTableByPose(const str::Pose<double>& pose, st
 	str::Pose<unsigned int> laser_pose_grid;
 	this->poseCoordToGrid(laser_pose, laser_pose_grid);//this function transfer theta to degree
 
-
+	//std::cout<<"laser grid ="<<laser_pose_grid<<std::endl;
 	unsigned int x = laser_pose_grid.getX(); 
 	unsigned int y = laser_pose_grid.getY();
 	unsigned int theta = laser_pose_grid.getTheta();
@@ -170,13 +170,19 @@ void str::MeasurementModel::selectDistTableByTheta(const unsigned int& theta_in_
 **/
 void str::MeasurementModel::poseCoordToGrid(const str::Pose<double>& pose_coord, str::Pose<unsigned int>& pose_grid)
 {
-	if(pose_coord.getX()<0 || pose_coord.getY() <0)
+	if(pose_coord.getX()<0 || pose_coord.getX() >= MAP_X_SIZE_IN_CM || pose_coord.getY() <0 || pose_coord.getY() >= MAP_Y_SIZE_IN_CM)
 		std::cout<<"Error: coord out of range coord: "<<pose_coord.getX()<<" "<<pose_coord.getY()<<std::endl;
 
 
 	str::Pose<double> copy_pose = pose_coord;
-	pose_grid.setX(static_cast<unsigned int>(round(copy_pose.getX()/MAP_RESOLUTION)));
-	pose_grid.setY(static_cast<unsigned int>(round(copy_pose.getY()/MAP_RESOLUTION)));
+	unsigned int x = static_cast<unsigned int>(round(copy_pose.getX()/MAP_RESOLUTION));
+	if(x >= MAP_X_SIZE_IN_GRID) x = MAP_X_SIZE_IN_GRID - 1;
+	pose_grid.setX(x);
+	
+	unsigned int y = static_cast<unsigned int>(round(copy_pose.getY()/MAP_RESOLUTION));
+	if(y >= MAP_Y_SIZE_IN_GRID) y = MAP_Y_SIZE_IN_GRID - 1;
+	pose_grid.setY(y);
+
 	//std::cout<<"theta = "<<copy_pose.getTheta()<<std::endl;
 	// if( copy_pose.getTheta() < 0)
 	// 	std::cout<<"currently it did not support negtive theta: "<<copy_pose.getTheta()<<std::endl;
